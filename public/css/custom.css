@@ -1,0 +1,229 @@
+/* Custom styles for Kiana Furniture - Premium Scandinavian Design */
+
+/* Color Variables */
+:root {
+    --brown-50: #fdf8f6;
+    --brown-100: #f2e8e5;
+    --brown-200: #e6d1c9;
+    --brown-300: #d9baad;
+    --brown-400: #cda391;
+    --brown-500: #8B5E3C;
+    --brown-600: #7a5235;
+    --brown-700: #69462e;
+    --brown-800: #583a27;
+    --brown-900: #472e20;
+    --gold-400: #C6A43F;
+    --gold-500: #b8942e;
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes zoomIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Animation Classes */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+}
+
+.animate-slide-down {
+    animation: slideDown 0.5s ease-out forwards;
+}
+
+.animate-zoom-in {
+    animation: zoomIn 0.3s ease-out forwards;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--brown-500);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--brown-600);
+}
+
+/* Toast Container */
+#toast-container {
+    z-index: 9999;
+}
+
+/* Image Fallback */
+img {
+    background-color: #f5f5f5;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%238B5E3C"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 8h-4v4h-4v-4H6V9h4V5h4v4h4v2z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 48px;
+}
+
+/* Card Hover Effects */
+.card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+}
+
+/* Image Zoom Effect */
+.image-zoom {
+    overflow: hidden;
+}
+
+.image-zoom img {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.image-zoom:hover img {
+    transform: scale(1.05);
+}
+
+/* Quantity Selector */
+.quantity-btn {
+    transition: all 0.2s ease;
+}
+
+.quantity-btn:hover {
+    background-color: var(--brown-500);
+    color: white;
+}
+
+/* Loading Spinner */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--brown-500);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.spinner-sm {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+}
+
+/* Back to Top Button */
+.back-to-top {
+    transition: all 0.3s ease;
+}
+
+.back-to-top:hover {
+    transform: translateY(-3px);
+    background-color: var(--brown-600);
+}
+
+/* Breadcrumb Navigation */
+.breadcrumb a {
+    transition: color 0.3s ease;
+}
+
+.breadcrumb a:hover {
+    color: var(--brown-500);
+}
+
+/* Form Focus Styles */
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--brown-500);
+    box-shadow: 0 0 0 3px rgba(139, 94, 60, 0.1);
+}
+
+/* Button Primary */
+.btn-primary {
+    background-color: var(--brown-500);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--brown-600);
+    transform: translateY(-2px);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
+    .section-py {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Glassmorphism Effect */
+.glass {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Star Rating */
+.star-rating {
+    color: #FFD700;
+}
+
+/* Badge Styles */
+.badge-new {
+    background-color: var(--gold-400);
+    color: white;
+}
+
+.badge-sale {
+    background-color: #ef4444;
+    color: white;
+}
+
+.badge-best {
+    background-color: var(--brown-500);
+    color: white;
+}
