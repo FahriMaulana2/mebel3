@@ -39,18 +39,54 @@
         </div>
         
         {{-- PRICE & STOCK --}}
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-                <label class="block text-sm font-medium mb-1">Price *</label>
-                <input type="number" name="price" value="{{ old('price') }}" required
-                       class="w-full border rounded px-3 py-2">
-            </div>
-            <div>
-                <label class="block text-sm font-medium mb-1">Stock *</label>
-                <input type="number" name="stock" value="{{ old('stock') }}" required
-                       class="w-full border rounded px-3 py-2">
-            </div>
-        </div>
+<div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+        <label class="block text-sm font-medium mb-1">Price *</label>
+        <input type="number" name="price" value="{{ old('price') }}" required
+               class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium mb-1">Stock *</label>
+        <input type="number" name="stock" value="{{ old('stock') }}" required
+               class="w-full border rounded px-3 py-2">
+    </div>
+</div>
+
+{{-- DISCOUNT --}}
+<div class="grid grid-cols-2 gap-4 mb-4">
+
+    <div>
+        <label class="block text-sm font-medium mb-1">
+            Discount Percentage
+        </label>
+
+        <input
+            type="number"
+            name="discount_percentage"
+            value="{{ old('discount_percentage', 0) }}"
+            min="0"
+            max="100"
+            class="w-full border rounded px-3 py-2"
+            placeholder="10"
+        >
+    </div>
+
+    <div class="flex items-end">
+        <label class="flex items-center gap-2">
+
+            <input
+                type="checkbox"
+                name="is_discount"
+                value="1"
+                {{ old('is_discount') ? 'checked' : '' }}
+            >
+
+            Active Discount
+        </label>
+    </div>
+
+</div>
         
         {{-- BRAND --}}
         <div class="mb-4">

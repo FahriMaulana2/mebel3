@@ -11,8 +11,23 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'brand_id', 'name', 'slug', 'description', 'price', 'stock',
-        'image', 'images', 'category', 'is_featured', 'is_active', 'views'
+        'brand_id',
+        'name',
+        'slug',
+        'description',
+        'price',
+        'stock',
+        'image',
+        'images',
+        'category',
+        'is_featured',
+        'is_active',
+        'views',
+
+        // DISKON
+        'discount_percentage',
+        'discount_start',
+        'discount_end',
     ];
 
     protected $casts = [
@@ -20,9 +35,19 @@ class Product extends Model
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
         'price' => 'decimal:2',
+
+        // DISKON
+        'discount_percentage' => 'decimal:2',
+        'discount_start' => 'datetime',
+        'discount_end' => 'datetime',
     ];
 
-    // Relationships
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONSHIPS
+    |--------------------------------------------------------------------------
+    */
+
     public function brand()
     {
         return $this->belongsTo(Brand::class);
@@ -33,48 +58,111 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
 
-    // Auto generate slug
+    /*
+    |--------------------------------------------------------------------------
+    | AUTO GENERATE SLUG
+    |--------------------------------------------------------------------------
+    */
+
     protected static function boot()
     {
         parent::boot();
+
         static::creating(function ($product) {
             $product->slug = Str::slug($product->name);
         });
     }
 
-    // Accessor for image URL
+    /*
+    |--------------------------------------------------------------------------
+    | ACCESSOR IMAGE URL
+    |--------------------------------------------------------------------------
+    */
+
     public function getImageUrlAttribute()
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        return $this->image
+            ? asset('storage/' . $this->image)
+            : null;
     }
 
-    // Check if product is in stock
+    /*
+    |--------------------------------------------------------------------------
+    | FINAL PRICE AFTER DISCOUNT
+    |--------------------------------------------------------------------------
+    */
+
+    public function getFinalPriceAttribute()
+    {
+        if (
+            $this->discount_percentage &&
+            $this->discount_start &&
+            $this->discount_end &&
+            now()->between(
+                $this->discount_start,
+                $this->discount_end
+            )
+        ) {
+
+            return $this->price -
+                ($this->price * $this->discount_percentage / 100);
+        }
+
+        return $this->price;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CHECK ACTIVE DISCOUNT
+    |--------------------------------------------------------------------------
+    */
+
+    public function getHasDiscountAttribute()
+    {
+        return
+            $this->discount_percentage &&
+            $this->discount_start &&
+            $this->discount_end &&
+            now()->between(
+                $this->discount_start,
+                $this->discount_end
+            );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STOCK
+    |--------------------------------------------------------------------------
+    */
+
     public function isInStock()
     {
         return $this->stock > 0;
     }
 
-    // Decrease stock
     public function decreaseStock($quantity)
     {
         $this->stock -= $quantity;
         $this->save();
     }
 
-    // Increase stock
     public function increaseStock($quantity)
     {
         $this->stock += $quantity;
         $this->save();
     }
 
-    // Scope for featured products
+    /*
+    |--------------------------------------------------------------------------
+    | SCOPES
+    |--------------------------------------------------------------------------
+    */
+
     public function scopeFeatured($query)
     {
         return $query->where('is_featured', true);
     }
 
-    // Scope for active products
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

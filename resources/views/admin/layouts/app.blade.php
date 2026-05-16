@@ -184,6 +184,11 @@
                     <i class="fas fa-box w-5"></i>
                     <span>Products</span>
                 </a>
+                <a href="{{ route('admin.vouchers.index') }}" 
+                    class="sidebar-link {{ request()->routeIs('admin.vouchers.*') ? 'active' : '' }}">
+                     <i class="fas fa-ticket-alt w-5"></i>
+                     <span>Vouchers</span>
+                </a>
                 <a href="{{ route('admin.orders.index') }}" 
                    class="sidebar-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
                     <i class="fas fa-shopping-bag w-5"></i>

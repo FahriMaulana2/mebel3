@@ -113,6 +113,40 @@
                     </select>
                 </div>
 
+                <!-- VOUCHER -->
+                <div class="mb-4">
+
+                    <label class="block text-sm font-medium mb-1">
+                        Voucher Code
+                    </label>
+
+                    <div class="flex gap-2">
+
+                        <input
+                            type="text"
+                            id="voucher_code"
+                            name="voucher_code"
+                            placeholder="Masukkan kode voucher"
+                            class="w-full border rounded-lg px-4 py-2"
+                        >
+
+                        <button
+                            type="button"
+                            onclick="applyVoucher()"
+                            class="bg-black text-white px-4 rounded-lg hover:bg-gray-800"
+                        >
+                            Apply
+                        </button>
+
+                    </div>
+
+                    <p
+                        id="voucher-message"
+                        class="text-sm mt-2"
+                    ></p>
+
+                </div>
+
             </div>
 
             <!-- ORDER SUMMARY -->
@@ -132,6 +166,7 @@
                 <div class="bg-green-50 rounded-xl shadow-md p-6 border border-green-200">
 
                     <div class="text-center mb-4">
+
                         <i class="fab fa-whatsapp text-5xl text-green-500 mb-2"></i>
 
                         <h2 class="text-xl font-semibold text-gray-800">
@@ -141,6 +176,7 @@
                         <p class="text-gray-500 text-sm mt-1">
                             Order akan disimpan ke dashboard admin
                         </p>
+
                     </div>
 
                     <button
@@ -148,6 +184,7 @@
                         class="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600 transition flex items-center justify-center gap-2"
                     >
                         <i class="fab fa-whatsapp text-xl"></i>
+
                         Checkout Sekarang
                     </button>
 
@@ -162,6 +199,33 @@
 </div>
 
 <script>
+
+function applyVoucher() {
+
+    const code = document
+        .getElementById('voucher_code')
+        .value
+        .trim();
+
+    const message = document.getElementById('voucher-message');
+
+    if (code === '') {
+
+        message.innerHTML = `
+            <span class="text-red-600">
+                Masukkan kode voucher
+            </span>
+        `;
+
+        return;
+    }
+
+    message.innerHTML = `
+        <span class="text-green-600">
+            Voucher akan dicek saat checkout
+        </span>
+    `;
+}
 
 function loadOrderSummary() {
 
@@ -192,6 +256,7 @@ function loadOrderSummary() {
 
         html += `
             <div class="flex justify-between mb-3">
+
                 <div>
                     ${item.name} x ${item.quantity}
                 </div>
@@ -199,32 +264,50 @@ function loadOrderSummary() {
                 <div>
                     Rp ${(item.price * item.quantity).toLocaleString('id-ID')}
                 </div>
+
             </div>
         `;
     });
 
     const shipping = 20000;
 
-    const total = subtotal + shipping;
+    const discount = 0;
+
+    const total = subtotal + shipping - discount;
 
     html += `
         <hr class="my-4">
 
         <div class="flex justify-between">
             <span>Subtotal</span>
-            <span>Rp ${subtotal.toLocaleString('id-ID')}</span>
+            <span>
+                Rp ${subtotal.toLocaleString('id-ID')}
+            </span>
         </div>
 
         <div class="flex justify-between mt-2">
             <span>Shipping</span>
-            <span>Rp ${shipping.toLocaleString('id-ID')}</span>
+            <span>
+                Rp ${shipping.toLocaleString('id-ID')}
+            </span>
+        </div>
+
+        <div class="flex justify-between mt-2 text-green-600">
+            <span>Discount</span>
+
+            <span>
+                - Rp ${discount.toLocaleString('id-ID')}
+            </span>
         </div>
 
         <div class="flex justify-between mt-4 text-lg font-bold">
+
             <span>Total</span>
+
             <span class="text-brown-600">
                 Rp ${total.toLocaleString('id-ID')}
             </span>
+
         </div>
     `;
 

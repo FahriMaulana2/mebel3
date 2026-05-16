@@ -73,6 +73,3 @@ Auth::routes();
 
 // ================= REDIRECT HOME =================
 Route::redirect('/home', '/');
-
-// ================= ADMIN ROUTES =================
-require __DIR__ . '/admin.php';

@@ -4,42 +4,38 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
-use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
     public function index()
     {
-        $payments = Payment::with('order')->latest()->paginate(15);
+        $payments = Payment::with('order')
+            ->latest()
+            ->paginate(15);
+
         return view('admin.payments.index', compact('payments'));
     }
 
     public function show(Payment $payment)
     {
         $payment->load('order');
+
         return view('admin.payments.show', compact('payment'));
     }
 
+    // ✅ KONFIRM PAYMENT
     public function verify(Payment $payment)
     {
-        $payment->status = 'paid';
-        $payment->paid_at = now();
-        $payment->save();
+        $payment->markAsPaid(); // pakai method dari model
 
-        // Also update order status
-        if ($payment->order && $payment->order->status == 'pending') {
-            $payment->order->status = 'processed';
-            $payment->order->save();
-        }
-
-        return redirect()->back()->with('success', 'Payment verified successfully!');
+        return back()->with('success', 'Payment berhasil dikonfirmasi');
     }
 
+    // ❌ REJECT PAYMENT
     public function reject(Payment $payment)
     {
-        $payment->status = 'failed';
-        $payment->save();
+        $payment->markAsRejected(); // pakai method dari model
 
-        return redirect()->back()->with('warning', 'Payment rejected!');
+        return back()->with('warning', 'Payment ditolak');
     }
 }

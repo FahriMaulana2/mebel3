@@ -11,6 +11,7 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
+
         'user_id',
         'order_number',
 
@@ -21,17 +22,21 @@ class Order extends Model
         'postal_code',
         'courier',
 
+        // WAJIB ADA
         'items',
 
         'total_amount',
         'shipping_cost',
         'grand_total',
 
+        'payment_status',
         'status',
         'notes'
     ];
 
     protected $casts = [
+
+        // WAJIB ADA
         'items' => 'array',
 
         'total_amount' => 'decimal:2',
@@ -50,17 +55,19 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    // 🔥 INI YANG BELUM ADA
+    // ORDER ITEMS
     public function items()
     {
         return $this->hasMany(OrderItem::class);
     }
 
+    // PAYMENT
     public function payment()
     {
         return $this->hasOne(Payment::class);
     }
 
+    // SHIPMENT
     public function shipment()
     {
         return $this->hasOne(Shipment::class);
@@ -79,12 +86,16 @@ class Order extends Model
         static::creating(function ($order) {
 
             if (!$order->order_number) {
+
                 $order->order_number =
-                    'INV-' .
-                    date('Ymd') .
-                    '-' .
-                    strtoupper(Str::random(6));
+                    'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6));
             }
+
+            // DEFAULT STATUS
+            $order->status = $order->status ?? 'pending';
+
+            $order->payment_status =
+                $order->payment_status ?? 'pending';
         });
     }
 }

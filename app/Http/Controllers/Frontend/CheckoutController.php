@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Shipment;
+use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -21,13 +22,13 @@ class CheckoutController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'fullname' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string',
-            'city' => 'required|string|max:100',
-            'postal_code' => 'required|string|max:10',
-            'courier' => 'required|string',
-            'cart_data' => 'required'
+            'fullname'     => 'required|string|max:255',
+            'phone'        => 'required|string|max:20',
+            'address'      => 'required|string',
+            'city'         => 'required|string|max:100',
+            'postal_code'  => 'required|string|max:10',
+            'courier'      => 'required|string',
+            'cart_data'    => 'required',
         ]);
 
         $cart = json_decode($request->cart_data, true);
@@ -36,92 +37,165 @@ class CheckoutController extends Controller
             return back()->with('error', 'Cart kosong!');
         }
 
-        // =========================
-        // HITUNG TOTAL
-        // =========================
+        /*
+        |--------------------------------------------------------------------------
+        | HITUNG SUBTOTAL
+        |--------------------------------------------------------------------------
+        */
         $subtotal = 0;
 
         foreach ($cart as $item) {
             $subtotal += $item['price'] * $item['quantity'];
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | SHIPPING
+        |--------------------------------------------------------------------------
+        */
         $shippingCost = 20000;
-        $grandTotal = $subtotal + $shippingCost;
 
+        /*
+        |--------------------------------------------------------------------------
+        | VOUCHER
+        |--------------------------------------------------------------------------
+        */
+        $discount = 0;
+
+        if ($request->voucher_code) {
+
+            $voucher = Voucher::where('code', strtoupper($request->voucher_code))
+                ->where('is_active', true)
+                ->first();
+
+            if (!$voucher) {
+                return back()->with('error', 'Voucher tidak valid');
+            }
+
+            // cek expired
+            if ($voucher->expired_at && now()->gt($voucher->expired_at)) {
+                return back()->with('error', 'Voucher sudah expired');
+            }
+
+            // cek minimum order
+            if ($subtotal < $voucher->minimum_order) {
+                return back()->with(
+                    'error',
+                    'Minimum order Rp ' .
+                    number_format($voucher->minimum_order, 0, ',', '.')
+                );
+            }
+
+            // hitung diskon
+            if ($voucher->type === 'percent') {
+
+                $discount = $subtotal * ($voucher->value / 100);
+
+            } else {
+
+                $discount = $voucher->value;
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | GRAND TOTAL
+        |--------------------------------------------------------------------------
+        */
+        $grandTotal = ($subtotal + $shippingCost) - $discount;
+
+        if ($grandTotal < 0) {
+            $grandTotal = 0;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ORDER NUMBER
+        |--------------------------------------------------------------------------
+        */
         $orderNumber = 'INV-' . date('Ymd') . '-' . strtoupper(Str::random(6));
 
         DB::beginTransaction();
 
         try {
 
-            // =========================
-            // ORDER
-            // =========================
+            /*
+            |--------------------------------------------------------------------------
+            | CREATE ORDER
+            |--------------------------------------------------------------------------
+            */
             $order = Order::create([
-                'order_number' => $orderNumber,
-                'user_id' => auth()->id(),
+                'order_number'   => $orderNumber,
+                'user_id'        => auth()->id(),
 
-                'fullname' => $request->fullname,
-                'phone' => $request->phone,
-                'address' => $request->address,
-                'city' => $request->city,
-                'postal_code' => $request->postal_code,
-                'courier' => $request->courier,
+                'fullname'       => $request->fullname,
+                'phone'          => $request->phone,
+                'address'        => $request->address,
+                'city'           => $request->city,
+                'postal_code'    => $request->postal_code,
+                'courier'        => $request->courier,
 
-                'items' => json_encode($cart),
+                'items'          => json_encode($cart),
 
-                'total_amount' => $subtotal,
-                'shipping_cost' => $shippingCost,
-                'grand_total' => $grandTotal,
+                'total_amount'   => $subtotal,
+                'shipping_cost'  => $shippingCost,
+                'grand_total'    => $grandTotal,
 
-                'status' => 'pending',
-                'notes' => 'Order via WhatsApp',
+                'status'         => 'pending',
+                'payment_status' => 'pending',
+
+                'notes'          => 'Order via WhatsApp',
             ]);
 
-            // =========================
-            // ORDER ITEMS
-            // =========================
+            /*
+            |--------------------------------------------------------------------------
+            | ORDER ITEMS
+            |--------------------------------------------------------------------------
+            */
             foreach ($cart as $item) {
 
                 OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item['id'],
-                    'product_name' => $item['name'],
+                    'order_id'      => $order->id,
+                    'product_id'    => $item['id'],
+                    'product_name'  => $item['name'],
                     'product_price' => $item['price'],
-                    'quantity' => $item['quantity'],
-                    'subtotal' => $item['price'] * $item['quantity'],
+                    'quantity'      => $item['quantity'],
+                    'subtotal'      => $item['price'] * $item['quantity'],
                 ]);
             }
 
-            // =========================
-            // PAYMENT
-            // =========================
+            /*
+            |--------------------------------------------------------------------------
+            | PAYMENT
+            |--------------------------------------------------------------------------
+            */
             Payment::create([
-                'order_id' => $order->id,
-                'amount' => $grandTotal,
+                'order_id'       => $order->id,
+                'amount'         => $grandTotal,
                 'payment_method' => 'whatsapp',
-                'status' => 'unpaid',
+
+                // GANTI unpaid -> pending
+                'status'         => 'pending',
             ]);
 
-            // =========================
-            // SHIPMENT
-            // =========================
+            /*
+            |--------------------------------------------------------------------------
+            | SHIPMENT
+            |--------------------------------------------------------------------------
+            */
             Shipment::create([
-                'order_id' => $order->id,
+                'order_id'       => $order->id,
                 'recipient_name' => $request->fullname,
-                'phone' => $request->phone,
-                'address' => $request->address,
-                'city' => $request->city,
-                'postal_code' => $request->postal_code,
-                'courier' => $request->courier,
-                'status' => 'pending',
+                'phone'          => $request->phone,
+                'address'        => $request->address,
+                'city'           => $request->city,
+                'postal_code'    => $request->postal_code,
+                'courier'        => $request->courier,
+                'status'         => 'pending',
             ]);
 
             DB::commit();
 
-            // =========================
-            // REDIRECT KE SUCCESS
-            // =========================
             return redirect()->route('checkout.success', $orderNumber);
 
         } catch (\Exception $e) {
@@ -137,19 +211,33 @@ class CheckoutController extends Controller
         $order = Order::where('order_number', $orderNumber)
             ->firstOrFail();
 
-        // =========================
-        // NOMOR ADMIN
-        // =========================
+        /*
+        |--------------------------------------------------------------------------
+        | NOMOR ADMIN
+        |--------------------------------------------------------------------------
+        */
         $adminPhone = '6283831520933';
 
-        // =========================
-        // DECODE ITEMS
-        // =========================
+        /*
+        |--------------------------------------------------------------------------
+        | DECODE ITEMS
+        |--------------------------------------------------------------------------
+        */
         $items = json_decode($order->items, true);
 
-        // =========================
-        // BUAT PESAN WHATSAPP
-        // =========================
+        /*
+        |--------------------------------------------------------------------------
+        | HITUNG DISKON
+        |--------------------------------------------------------------------------
+        */
+        $discount = ($order->total_amount + $order->shipping_cost)
+            - $order->grand_total;
+
+        /*
+        |--------------------------------------------------------------------------
+        | BUAT PESAN WHATSAPP
+        |--------------------------------------------------------------------------
+        */
         $message = "*🛍️ ORDER BARU DARI KIANA FURNITURE*%0A%0A";
 
         $message .= "*📋 DETAIL PEMESAN:*%0A";
@@ -175,16 +263,39 @@ class CheckoutController extends Controller
             $message .= "%0A";
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | TOTAL PEMBAYARAN
+        |--------------------------------------------------------------------------
+        */
         $message .= "%0A*💰 TOTAL PEMBAYARAN:*%0A";
-        $message .= "Subtotal: Rp " . number_format($order->total_amount, 0, ',', '.') . "%0A";
-        $message .= "Ongkir: Rp " . number_format($order->shipping_cost, 0, ',', '.') . "%0A";
-        $message .= "Grand Total: Rp " . number_format($order->grand_total, 0, ',', '.') . "%0A%0A";
+
+        $message .= "Subtotal: Rp "
+            . number_format($order->total_amount, 0, ',', '.')
+            . "%0A";
+
+        $message .= "Ongkir: Rp "
+            . number_format($order->shipping_cost, 0, ',', '.')
+            . "%0A";
+
+        if ($discount > 0) {
+
+            $message .= "Diskon Voucher: -Rp "
+                . number_format($discount, 0, ',', '.')
+                . "%0A";
+        }
+
+        $message .= "Grand Total: Rp "
+            . number_format($order->grand_total, 0, ',', '.')
+            . "%0A%0A";
 
         $message .= "_Pesan dikirim dari website Kiana Furniture_";
 
-        // =========================
-        // URL WHATSAPP
-        // =========================
+        /*
+        |--------------------------------------------------------------------------
+        | URL WHATSAPP
+        |--------------------------------------------------------------------------
+        */
         $whatsappUrl = "https://wa.me/{$adminPhone}?text={$message}";
 
         return view('frontend.checkout.success', compact(
