@@ -1,30 +1,10 @@
-# Kiana Furniture Website Redesign
+# TODO - Kiana Furniture Enhancements (Additive)
 
-## Task List
+- [ ] Add strict voucher validation: 1 user 1 voucher usage (CheckoutController@store) + persist voucher_id on successful checkout.
+- [ ] Update Product model pricing display logic (only additive): ensure `final_price` + `has_discount` used.
+- [ ] Update frontend product listing price (resources/views/frontend/products/index.blade.php): show normal price or (original + crossed + final_price).
+- [ ] Update frontend product detail price (resources/views/frontend/products/show.blade.php): show crossed original + final_price when discount active.
+- [ ] Update admin Product create/edit handling for discount fields (must not break existing discount_percentage behavior). 
+- [ ] Add new migration(s) only if required (avoid editing old migrations).
+- [ ] Run migrations + quick manual test checklist: voucher double-use reject; discount window price display.
 
-### Step 1: Update Tailwind Config
-- [x] Change colors: primary #8B5E3C, secondary #F5F5F0
-- [x] Add fonts: Playfair Display, Inter
-
-### Step 2: Update Root Layout
-- [ ] layouts/app.blade.php - Root layout with new fonts, colors, animations
-
-### Step 3: Update Navbar
-- [ ] layouts/partials/navbar.blade.php - Logo, menu items, cart icon
-
-### Step 4: Update Footer  
-- [ ] layouts/partials/footer.blade.php - 4-column footer
-
-### Step 5: Update Home Page
-- [ ] frontend/home.blade.php - All sections with product images
-
-## Products to Display (Featured):
-1. Elegant Armchair - Rp 2.450.000 - 4.8★ (48 review) - Best Seller
-2. Scandinavian Sofa - Rp 5.800.000 - 4.9★ (126 review) - New
-3. Wooden Coffee Table - Rp 1.200.000 - 4.7★ (89 review)
-4. Minimalist Lamp - Rp 450.000 - 4.6★ (234 review)
-
-## Products to Display (Latest Arrivals):
-1. Elegant Armchair - Rp 2.450.000
-2. Ceramic Vases Set - Rp 350.000
-3. Bookshelf Cabinet - Rp 1.850.000

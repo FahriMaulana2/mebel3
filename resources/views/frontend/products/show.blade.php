@@ -89,7 +89,14 @@
             
             <!-- Price -->
             <div class="mb-6">
-                <span class="text-4xl font-bold text-brown-600">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                @if($product->has_discount)
+                    <div class="flex items-baseline gap-3 flex-wrap">
+                        <span class="text-xl font-bold text-gray-500"><s>Rp {{ number_format($product->price, 0, ',', '.') }}</s></span>
+                        <span class="text-4xl font-bold text-brown-600">Rp {{ number_format($product->final_price, 0, ',', '.') }}</span>
+                    </div>
+                @else
+                    <span class="text-4xl font-bold text-brown-600">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                @endif
             </div>
             
             <!-- Stock Status -->

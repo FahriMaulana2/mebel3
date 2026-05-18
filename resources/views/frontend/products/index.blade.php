@@ -145,9 +145,18 @@
                                 {{ $p->brand->name ?? 'No Brand' }}
                             </p>
 
-                            <p class="text-brown-600 font-bold text-lg mb-4">
-                                Rp {{ number_format($p->price, 0, ',', '.') }}
-                            </p>
+                            @if($p->has_discount)
+                                <p class="text-brown-600 font-bold text-lg mb-2">
+                                    <s class="text-gray-500">Rp {{ number_format($p->price, 0, ',', '.') }}</s>
+                                </p>
+                                <p class="text-brown-600 font-bold text-lg mb-4">
+                                    Rp {{ number_format($p->final_price, 0, ',', '.') }}
+                                </p>
+                            @else
+                                <p class="text-brown-600 font-bold text-lg mb-4">
+                                    Rp {{ number_format($p->price, 0, ',', '.') }}
+                                </p>
+                            @endif
 
                             <a
                                 href="{{ route('products.show', $p->slug) }}"
@@ -184,4 +193,6 @@
     </div>
 
 </div>
+
 @endsection
+

@@ -27,6 +27,7 @@ class ProductController extends Controller
         if ($request->filled('price')) {
 
             switch ($request->price) {
+
                 case '0-500000':
                     $query->where('price', '<', 500000);
                     break;
@@ -47,17 +48,24 @@ class ProductController extends Controller
 
         // ================== SORT ==================
         if ($request->sort === 'price_low') {
+
             $query->orderBy('price', 'asc');
 
         } elseif ($request->sort === 'price_high') {
+
             $query->orderBy('price', 'desc');
 
         } else {
-            $query->latest(); // default
+
+            // default latest
+            $query->latest();
         }
 
         // ================== GET DATA ==================
-        $products = $query->get();
+        $products = $query
+            ->with('brand')
+            ->paginate(12)
+            ->withQueryString();
 
         return view('frontend.products.index', compact('products'));
     }
@@ -73,6 +81,7 @@ class ProductController extends Controller
         $relatedProducts = Product::where('is_active', true)
             ->where('id', '!=', $product->id)
             ->where(function ($q) use ($product) {
+
                 $q->where('category', $product->category)
                   ->orWhere('brand_id', $product->brand_id);
             })

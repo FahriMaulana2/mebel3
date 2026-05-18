@@ -31,7 +31,9 @@ class Order extends Model
 
         'payment_status',
         'status',
-        'notes'
+'notes',
+
+        'voucher_id',
     ];
 
     protected $casts = [

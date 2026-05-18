@@ -4,6 +4,10 @@
 
 @section('content')
 
+@php
+    use Illuminate\Support\Str;
+@endphp
+
 <!-- Hero Section -->
 <section class="relative bg-gradient-to-br from-gray-50 via-white to-gray-50 pt-16 pb-24 overflow-hidden">
     <div class="absolute top-20 right-0 w-96 h-96 bg-brown-100 rounded-full opacity-20 blur-3xl"></div>
@@ -114,12 +118,34 @@
 
                     <div class="h-64 overflow-hidden">
 
-                        <img
-                            src="{{ $product->image }}"
-                            alt="{{ $product->name }}"
-                            class="w-full h-full object-cover hover:scale-105 transition duration-500">
+    @php
+        if ($product->image) {
 
-                    </div>
+            if (
+                Str::startsWith($product->image, ['http://', 'https://'])
+            ) {
+
+                $imagePath = $product->image;
+
+            } else {
+
+                $imagePath = asset('storage/' . $product->image);
+
+            }
+
+        } else {
+
+            $imagePath = 'https://via.placeholder.com/600x600?text=No+Image';
+
+        }
+    @endphp
+
+    <img
+        src="{{ $imagePath }}"
+        alt="{{ $product->name }}"
+        class="w-full h-full object-cover hover:scale-105 transition duration-500">
+
+</div>
 
                     <div class="p-5">
 

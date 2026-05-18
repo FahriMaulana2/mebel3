@@ -61,8 +61,10 @@ class CheckoutController extends Controller
         |--------------------------------------------------------------------------
         */
         $discount = 0;
+        $voucherId = null;
 
         if ($request->voucher_code) {
+
 
             $voucher = Voucher::where('code', strtoupper($request->voucher_code))
                 ->where('is_active', true)
@@ -72,7 +74,22 @@ class CheckoutController extends Controller
                 return back()->with('error', 'Voucher tidak valid');
             }
 
+            // STRICT RULE: 1 user can use the same voucher only once
+            if (auth()->id()) {
+                $alreadyUsed = Order::where('user_id', auth()->id())
+                    ->where('voucher_id', $voucher->id)
+                    ->exists();
+
+                if ($alreadyUsed) {
+                    return back()->with('error', 'Voucher sudah pernah digunakan');
+                }
+            }
+
+
+            $voucherId = $voucher->id;
+
             // cek expired
+
             if ($voucher->expired_at && now()->gt($voucher->expired_at)) {
                 return back()->with('error', 'Voucher sudah expired');
             }
@@ -141,11 +158,13 @@ class CheckoutController extends Controller
                 'shipping_cost'  => $shippingCost,
                 'grand_total'    => $grandTotal,
 
-                'status'         => 'pending',
+'status'         => 'pending',
                 'payment_status' => 'pending',
 
                 'notes'          => 'Order via WhatsApp',
+                'voucher_id'    => $voucherId,
             ]);
+
 
             /*
             |--------------------------------------------------------------------------
