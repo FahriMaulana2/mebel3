@@ -96,7 +96,10 @@
                     value="{{ old('discount_start', $product->discount_start ? 
                         $product->discount_start->format('Y-m-d\TH:i') : '') }}"
                     class="w-full border rounded-lg px-4 py-2"
+                    inputmode="none"
+                    onkeydown="return false"
                 >
+                <p class="text-xs text-gray-500 mt-1">Gunakan date picker (format otomatis)</p>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Discount End</label>
@@ -106,7 +109,10 @@
                     value="{{ old('discount_end', $product->discount_end ? 
                         $product->discount_end->format('Y-m-d\TH:i') : '') }}"
                     class="w-full border rounded-lg px-4 py-2"
+                    inputmode="none"
+                    onkeydown="return false"
                 >
+                <p class="text-xs text-gray-500 mt-1">Gunakan date picker (format otomatis)</p>
             </div>
         </div>
 
