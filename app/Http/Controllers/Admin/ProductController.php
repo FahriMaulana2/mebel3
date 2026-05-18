@@ -96,6 +96,7 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        dd($request->all());
         $validated = $request->validate([
             'brand_id' => 'required|exists:brands,id',
             'name' => 'required|string|max:255',
