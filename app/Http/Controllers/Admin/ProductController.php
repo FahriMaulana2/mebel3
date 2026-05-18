@@ -7,6 +7,7 @@ use App\Models\Brand;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class ProductController extends Controller
 {
@@ -34,10 +35,10 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'category' => 'nullable|string',
 
-            // DISKON FIX
+            // DISKON
             'discount_percentage' => 'nullable|numeric|min:0|max:100',
-            'discount_start' => 'nullable|date_format:Y-m-d\TH:i',
-            'discount_end' => 'nullable|date_format:Y-m-d\TH:i|after_or_equal:discount_start',
+            'discount_start' => 'nullable|date',
+            'discount_end' => 'nullable|date|after_or_equal:discount_start',
             'is_discount' => 'nullable|boolean',
 
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -58,6 +59,17 @@ class ProductController extends Controller
         }
 
         /*
+        | CONVERT DATE SAFELY
+        */
+        if ($request->discount_start) {
+            $validated['discount_start'] = Carbon::parse($request->discount_start);
+        }
+
+        if ($request->discount_end) {
+            $validated['discount_end'] = Carbon::parse($request->discount_end);
+        }
+
+        /*
         | PRODUCT DATA
         */
         $validated['slug'] = Str::slug($validated['name']);
@@ -67,8 +79,6 @@ class ProductController extends Controller
         $validated['is_discount'] = $request->boolean('is_discount');
 
         $validated['discount_percentage'] = $request->discount_percentage ?? 0;
-        $validated['discount_start'] = $request->discount_start;
-        $validated['discount_end'] = $request->discount_end;
 
         Product::create($validated);
 
@@ -94,10 +104,10 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'category' => 'nullable|string',
 
-            // DISKON FIX
+            // DISKON
             'discount_percentage' => 'nullable|numeric|min:0|max:100',
-            'discount_start' => 'nullable|date_format:Y-m-d\TH:i',
-            'discount_end' => 'nullable|date_format:Y-m-d\TH:i|after_or_equal:discount_start',
+            'discount_start' => 'nullable|date',
+            'discount_end' => 'nullable|date|after_or_equal:discount_start',
             'is_discount' => 'nullable|boolean',
 
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -118,6 +128,17 @@ class ProductController extends Controller
         }
 
         /*
+        | CONVERT DATE SAFELY
+        */
+        if ($request->discount_start) {
+            $validated['discount_start'] = Carbon::parse($request->discount_start);
+        }
+
+        if ($request->discount_end) {
+            $validated['discount_end'] = Carbon::parse($request->discount_end);
+        }
+
+        /*
         | PRODUCT DATA
         */
         $validated['slug'] = Str::slug($validated['name']);
@@ -127,8 +148,6 @@ class ProductController extends Controller
         $validated['is_discount'] = $request->boolean('is_discount');
 
         $validated['discount_percentage'] = $request->discount_percentage ?? 0;
-        $validated['discount_start'] = $request->discount_start;
-        $validated['discount_end'] = $request->discount_end;
 
         $product->update($validated);
 
