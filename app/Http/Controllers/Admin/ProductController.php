@@ -40,7 +40,13 @@ class ProductController extends Controller
 
             'category' => 'nullable|string',
 
-            'discount_percentage' => 'nullable|integer|min:0|max:100',
+            'discount_percentage' => 'nullable|numeric|min:0|max:100',
+
+            'discount_start' => 'nullable|date',
+
+            'discount_end' => 'nullable|date|after_or_equal:discount_start',
+
+            'is_discount' => 'nullable|boolean',
 
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
 
@@ -51,6 +57,7 @@ class ProductController extends Controller
             'is_active' => 'boolean',
 
         ]);
+
 
         /*
         |--------------------------------------------------------------------------
@@ -119,7 +126,13 @@ class ProductController extends Controller
 
             'category' => 'nullable|string',
 
-            'discount_percentage' => 'nullable|integer|min:0|max:100',
+            'discount_percentage' => 'nullable|numeric|min:0|max:100',
+
+            'discount_start' => 'nullable|date',
+
+            'discount_end' => 'nullable|date|after_or_equal:discount_start',
+
+            'is_discount' => 'nullable|boolean',
 
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
 
@@ -130,6 +143,7 @@ class ProductController extends Controller
             'is_active' => 'boolean',
 
         ]);
+
 
         /*
         |--------------------------------------------------------------------------
