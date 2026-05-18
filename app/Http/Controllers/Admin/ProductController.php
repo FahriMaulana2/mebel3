@@ -52,20 +52,19 @@ class ProductController extends Controller
         | IMAGE UPLOAD
         */
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('products', 'public');
-            $validated['image'] = $path;
+            $validated['image'] = $request->file('image')->store('products', 'public');
         } elseif ($request->image_url) {
             $validated['image'] = $request->image_url;
         }
 
         /*
-        | CONVERT DATE SAFELY
+        | DATE SAFE CONVERT
         */
-        if ($request->discount_start) {
+        if ($request->filled('discount_start')) {
             $validated['discount_start'] = Carbon::parse($request->discount_start);
         }
 
-        if ($request->discount_end) {
+        if ($request->filled('discount_end')) {
             $validated['discount_end'] = Carbon::parse($request->discount_end);
         }
 
@@ -74,9 +73,9 @@ class ProductController extends Controller
         */
         $validated['slug'] = Str::slug($validated['name']);
 
-        $validated['is_featured'] = $request->boolean('is_featured');
-        $validated['is_active'] = $request->boolean('is_active');
-        $validated['is_discount'] = $request->boolean('is_discount');
+        $validated['is_featured'] = $request->has('is_featured');
+        $validated['is_active'] = $request->has('is_active');
+        $validated['is_discount'] = $request->has('is_discount');
 
         $validated['discount_percentage'] = $request->discount_percentage ?? 0;
 
@@ -121,31 +120,36 @@ class ProductController extends Controller
         | IMAGE
         */
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('products', 'public');
-            $validated['image'] = $path;
+            $validated['image'] = $request->file('image')->store('products', 'public');
         } elseif ($request->image_url) {
             $validated['image'] = $request->image_url;
         }
 
         /*
-        | CONVERT DATE SAFELY
+        | DATE SAFE CONVERT
         */
-        if ($request->discount_start) {
+        if ($request->filled('discount_start')) {
             $validated['discount_start'] = Carbon::parse($request->discount_start);
         }
 
-        if ($request->discount_end) {
+        if ($request->filled('discount_end')) {
             $validated['discount_end'] = Carbon::parse($request->discount_end);
         }
 
         /*
-        | PRODUCT DATA
+        | PRODUCT DATA FIX (INI YANG KRUSIAL)
         */
         $validated['slug'] = Str::slug($validated['name']);
 
-        $validated['is_featured'] = $request->boolean('is_featured');
-        $validated['is_active'] = $request->boolean('is_active');
-        $validated['is_discount'] = $request->boolean('is_discount');
+        // 🔥 FIX UTAMA: jangan overwrite false saat checkbox tidak dikirim
+        if ($request->has('is_active')) {
+            $validated['is_active'] = true;
+        } else {
+            $validated['is_active'] = $product->is_active;
+        }
+
+        $validated['is_featured'] = $request->has('is_featured');
+        $validated['is_discount'] = $request->has('is_discount');
 
         $validated['discount_percentage'] = $request->discount_percentage ?? 0;
 
