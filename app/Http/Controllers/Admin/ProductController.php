@@ -96,12 +96,17 @@ class ProductController extends Controller
         $validated['discount_percentage']
             = $request->discount_percentage ?? 0;
 
+        $validated['discount_start'] = $request->discount_start;
+
+        $validated['discount_end'] = $request->discount_end;
+
         Product::create($validated);
 
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Product created successfully!');
     }
+
 
     public function edit(Product $product)
     {
