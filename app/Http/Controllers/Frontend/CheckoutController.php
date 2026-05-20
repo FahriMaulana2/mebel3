@@ -239,7 +239,8 @@ class CheckoutController extends Controller
         | NOMOR ADMIN
         |--------------------------------------------------------------------------
         */
-        $adminPhone = '6283831520933';
+        // Nomor WhatsApp admin/toko (tujuan redirect checkout manual)
+        $adminPhone = '6283138756049';
 
         /*
         |--------------------------------------------------------------------------
