@@ -6,9 +6,12 @@
 <div>
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Products</h1>
-        <a href="{{ route('admin.products.create') }}" class="bg-brown-600 text-white px-5 py-2.5 rounded-lg hover:bg-brown-700 transition shadow-md flex items-center gap-2">
-            <i class="fas fa-plus"></i> Add Product
-        </a>
+        <a href="{{ route('admin.products.create') }}" 
+   class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow transition-all duration-200">
+    
+    <i class="fas fa-plus text-xs"></i>
+    Add Product
+</a>
     </div>
     
     <div class="bg-white rounded-xl shadow-md overflow-hidden">
