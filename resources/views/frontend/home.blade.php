@@ -332,62 +332,80 @@
             </div>
 
             <!-- RIGHT -->
-            <div data-aos="fade-left"
-                 data-aos-duration="1000">
+<div data-aos="fade-left"
+     data-aos-duration="1000">
 
-                <div class="relative rounded-[32px] overflow-hidden shadow-2xl border border-gray-200 bg-white">
+    <div class="relative rounded-[32px] overflow-hidden shadow-2xl border border-gray-200 bg-white">
 
-                    <!-- MAP -->
-                    <div class="relative">
+        <!-- MAP - BISA DIKLIK -->
+        <a href="https://www.google.com/maps?q=-6.502801900516626,110.7165587251846&z=17" 
+           target="_blank" 
+           class="block relative">
 
-                        <!-- LOCK OVERLAY -->
-                        <div class="absolute inset-0 z-20"></div>
+            <!-- GOOGLE MAP (SEBAGAI THUMBNAIL) -->
+            <div class="relative">
 
-                        <!-- GOOGLE MAP -->
-                        <iframe
-                            src="https://www.google.com/maps?q=-6.502801900516626,110.7165587251846&z=17&output=embed"
-                            width="100%"
-                            height="620"
-                            style="border:0;"
-                            loading="lazy"
-                            class="w-full">
-                        </iframe>
+                <iframe
+                    src="https://www.google.com/maps?q=-6.502801900516626,110.7165587251846&z=17&output=embed"
+                    width="100%"
+                    height="620"
+                    style="border:0;"
+                    loading="lazy"
+                    class="w-full pointer-events-none">
+                </iframe>
 
-                        <!-- FLOATING INFO -->
-                        <div class="absolute bottom-6 left-6 z-30">
+                <!-- OVERLAY TRANSPARAN UNTUK KLIK -->
+                <div class="absolute inset-0 z-10"></div>
 
-                            <div class="bg-white/95 backdrop-blur-md rounded-2xl px-5 py-4 shadow-xl border border-white/50 max-w-sm">
+                <!-- FLOATING INFO DENGAN TOMBOL LIHAT -->
+                <div class="absolute bottom-6 left-6 right-6 z-20">
 
-                                <div class="flex items-center gap-4">
+                    <div class="bg-white/95 backdrop-blur-md rounded-2xl px-5 py-4 shadow-xl border border-white/50">
 
-                                    <!-- ICON -->
-                                    <div class="w-14 h-14 rounded-2xl bg-[#8B5E3C] flex items-center justify-center shadow-lg flex-shrink-0">
+                        <div class="flex items-center gap-4">
 
-                                        <i class="fas fa-map-marker-alt text-white text-xl"></i>
+                            <!-- ICON -->
+                            <div class="w-14 h-14 rounded-2xl bg-[#8B5E3C] flex items-center justify-center shadow-lg flex-shrink-0">
 
-                                    </div>
-
-                                    <!-- TEXT -->
-                                    <div>
-
-                                        <span class="uppercase tracking-[2px] text-[11px] text-[#8B5E3C] font-semibold">
-                                            Lokasi Produksi
-                                        </span>
-
-                                        <h3 class="text-xl font-bold text-[#2D2D2D] leading-tight mt-1">
-                                            Jepara, Jawa Tengah
-                                        </h3>
-
-                                        <p class="text-gray-600 text-sm mt-1 leading-relaxed">
-                                            Workshop utama furniture premium KianaFurniture.
-                                        </p>
-
-                                    </div>
-
-                                </div>
+                                <i class="fas fa-map-marker-alt text-white text-xl"></i>
 
                             </div>
 
+                            <!-- TEXT -->
+                            <div class="flex-1">
+
+                                <span class="uppercase tracking-[2px] text-[11px] text-[#8B5E3C] font-semibold">
+                                    Lokasi Produksi
+                                </span>
+
+                                <h3 class="text-xl font-bold text-[#2D2D2D] leading-tight mt-1">
+                                    Jepara, Jawa Tengah
+                                </h3>
+
+                                <p class="text-gray-600 text-sm mt-1 leading-relaxed">
+                                    Workshop utama furniture premium KianaFurniture.
+                                </p>
+
+                            </div>
+
+                            <!-- TOMBOL LIHAT DI MAPS -->
+                            <div class="flex-shrink-0 hidden sm:block">
+
+                                <span class="bg-[#8B5E3C] text-white text-xs px-3 py-2 rounded-full inline-flex items-center gap-1">
+                                    Lihat di Maps
+                                    <i class="fas fa-external-link-alt text-xs"></i>
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <!-- TOMBOL MOBILE -->
+                        <div class="mt-3 sm:hidden">
+                            <span class="bg-[#8B5E3C] text-white text-sm px-4 py-2 rounded-full inline-flex items-center gap-2 w-full justify-center">
+                                Buka di Google Maps
+                                <i class="fas fa-external-link-alt"></i>
+                            </span>
                         </div>
 
                     </div>
@@ -396,10 +414,11 @@
 
             </div>
 
-        </div>
+        </a>
 
     </div>
 
+</div>
 </section>
 
 
