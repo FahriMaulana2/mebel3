@@ -69,21 +69,27 @@ class Payment extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | MARK AS PAID (AUTO UPDATE ORDER)
+    | MARK AS PAID (AMAN - TIDAK MENGUBAH ORDER YANG SUDAH COMPLETED)
     |--------------------------------------------------------------------------
     */
     public function markAsPaid()
     {
+        // Update status payment
         $this->status = self::STATUS_PAID;
         $this->paid_at = now();
         $this->save();
 
-        // update order otomatis
+        // Update order terkait
         if ($this->order) {
-            $this->order->update([
-                'payment_status' => 'paid',
-                'status' => 'processed',
-            ]);
+            $updateData = ['payment_status' => 'paid'];
+            
+            // HANYA update status order jika masih pending atau processed
+            // JANGAN ubah jika sudah completed, shipped, atau cancelled
+            if (in_array($this->order->status, ['pending', 'processed'])) {
+                $updateData['status'] = 'processed';
+            }
+            
+            $this->order->update($updateData);
         }
     }
 
@@ -98,11 +104,12 @@ class Payment extends Model
         $this->paid_at = null;
         $this->save();
 
-        // update order juga
+        // Update order juga
         if ($this->order) {
             $this->order->update([
                 'payment_status' => 'rejected',
             ]);
+            // JANGAN ubah status order di sini
         }
     }
 
