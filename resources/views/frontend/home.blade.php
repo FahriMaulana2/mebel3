@@ -149,15 +149,89 @@
 
                     <div class="p-5">
 
-                        <h3 class="font-semibold text-gray-800 text-lg mb-2">
-                            {{ $product->name }}
-                        </h3>
+    @php
 
-                        <p class="text-brown-600 font-bold text-xl">
-                            Rp {{ number_format($product->price, 0, ',', '.') }}
-                        </p>
+        $isDiscountActive = false;
 
-                    </div>
+        if (
+            $product->is_discount &&
+            $product->discount_percentage > 0
+        ) {
+
+            $now = now();
+
+            $start = $product->discount_start;
+            $end = $product->discount_end;
+
+            if (
+                (!$start || $now >= $start) &&
+                (!$end || $now <= $end)
+            ) {
+                $isDiscountActive = true;
+            }
+        }
+
+        $discountPrice = $product->price;
+
+        if ($isDiscountActive) {
+
+            $discountPrice =
+                $product->price -
+                ($product->price * $product->discount_percentage / 100);
+        }
+
+    @endphp
+
+    {{-- PRODUCT NAME --}}
+    <h3 class="font-semibold text-gray-800 text-lg mb-2 line-clamp-2">
+        {{ $product->name }}
+    </h3>
+
+    {{-- DISCOUNT BADGE --}}
+    @if($isDiscountActive)
+
+        <div class="mb-3">
+
+            <span class="inline-flex items-center bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full">
+
+                🔥 {{ $product->discount_percentage }}% OFF
+
+            </span>
+
+        </div>
+
+    @endif
+
+    {{-- PRICE --}}
+    <div class="flex flex-col gap-1">
+
+        {{-- DISCOUNT PRICE --}}
+        @if($isDiscountActive)
+
+            <div class="flex items-center gap-2 flex-wrap">
+
+                <span class="text-red-600 font-bold text-2xl">
+                    Rp {{ number_format($discountPrice, 0, ',', '.') }}
+                </span>
+
+                <span class="text-gray-400 line-through text-sm">
+                    Rp {{ number_format($product->price, 0, ',', '.') }}
+                </span>
+
+            </div>
+
+        @else
+
+            {{-- NORMAL PRICE --}}
+            <span class="text-brown-600 font-bold text-2xl">
+                Rp {{ number_format($product->price, 0, ',', '.') }}
+            </span>
+
+        @endif
+
+    </div>
+
+</div>
 
                 </a>
 
