@@ -619,6 +619,7 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     let message = document.getElementById('message').value.trim();
 
     if(name === '' || email === '' || message === '') {
+
         alert('Mohon lengkapi form terlebih dahulu.');
         return;
     }
@@ -631,37 +632,65 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
 
     submitBtn.disabled = true;
 
-    let phoneNumber = '6283831520933';
+    /*
+    |--------------------------------------------------------------------------
+    | EMAIL RECEIVER
+    |--------------------------------------------------------------------------
+    */
 
-    let text =
-`Halo Admin KianaFurniture 👋
+    let adminEmail = 'fahrimaulana93222gmail.com';
+
+    /*
+    |--------------------------------------------------------------------------
+    | EMAIL SUBJECT
+    |--------------------------------------------------------------------------
+    */
+
+    let emailSubject =
+        subject !== ''
+            ? subject
+            : 'Pesan dari Website KianaFurniture';
+
+    /*
+    |--------------------------------------------------------------------------
+    | EMAIL BODY
+    |--------------------------------------------------------------------------
+    */
+
+    let body =
+`Halo Admin KianaFurniture,
 
 Saya ingin menghubungi KianaFurniture dengan detail berikut:
 
 ━━━━━━━━━━━━━━━
-👤 Nama : ${name}
-📧 Email : ${email}
-📝 Subject : ${subject}
+Nama   : ${name}
+Email  : ${email}
 ━━━━━━━━━━━━━━━
 
-💬 Pesan:
+Pesan:
 ${message}
 
 Terima kasih.`;
 
-    let whatsappURL =
-`https://wa.me/${phoneNumber}?text=${encodeURIComponent(text)}`;
+    /*
+    |--------------------------------------------------------------------------
+    | OPEN EMAIL CLIENT
+    |--------------------------------------------------------------------------
+    */
+
+    let mailtoLink =
+`mailto:${adminEmail}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
 
     setTimeout(() => {
 
-        window.open(whatsappURL, '_blank');
+        window.location.href = mailtoLink;
 
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
 
         document.getElementById('contactForm').reset();
 
-    }, 700);
+    }, 500);
 
 });
 </script>
