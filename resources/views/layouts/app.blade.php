@@ -53,8 +53,12 @@
         @yield('content')
     </main>
 
+    {{-- Flash popups (SweetAlert2) --}}
+    <x-alerts />
+
     {{-- Footer --}}
     @include('layouts.partials.footer')
+
 
     {{-- Back to Top --}}
     <button id="backToTop"

@@ -618,8 +618,7 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     let message = document.getElementById('message').value.trim();
 
     if(name === '' || email === '' || message === '') {
-        alert('Mohon lengkapi form terlebih dahulu.');
-        return;
+
     }
 
     const submitBtn = document.getElementById('submitBtn');

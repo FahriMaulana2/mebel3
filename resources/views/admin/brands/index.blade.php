@@ -20,7 +20,11 @@
                     <td class="px-4 py-3 text-gray-500">{{ $brand->slug }}</td>
                     <td class="px-4 py-3">{{ $brand->products_count }}</td>
                     <td class="px-4 py-3"><span class="px-2 py-1 text-xs rounded-full {{ $brand->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">{{ $brand->is_active ? 'Active' : 'Inactive' }}</span></td>
-                    <td class="px-4 py-3"><a href="{{ route('admin.brands.edit', $brand) }}" class="text-blue-600 hover:text-blue-800 mr-2"><i class="fas fa-edit"></i></a><form action="{{ route('admin.brands.destroy', $brand) }}" method="POST" class="inline" onsubmit="return confirm('Delete this brand?')">@csrf @method('DELETE')<button type="submit" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button></form></td>
+                    <td class="px-4 py-3"><a href="{{ route('admin.brands.edit', $brand) }}" class="text-blue-600 hover:text-blue-800 mr-2"><i class="fas fa-edit"></i></a><form action="{{ route('admin.brands.destroy', $brand) }}" method="POST" class="inline"
+                      data-mebel-popup="confirm-delete"
+                      data-title="Delete this brand?"
+                      data-message="This action cannot be undone."><input type="hidden" name="_token" value="{{ csrf_token() }}" />@method('DELETE')<button type="submit" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button></form></td>
+
                 </tr>
                 @empty
                 <tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">No brands found</td></tr>

@@ -13,11 +13,7 @@
     </a>
 </div>
 
-@if(session('success'))
-    <div class="bg-green-100 text-green-700 p-4 rounded mb-4">
-        {{ session('success') }}
-    </div>
-@endif
+
 
 <div class="bg-white rounded shadow overflow-x-auto">
 
@@ -84,7 +80,10 @@
                         <form action="{{ route('admin.vouchers.destroy', $voucher->id) }}"
                               method="POST"
                               class="inline-block"
-                              onsubmit="return confirm('Delete voucher?')">
+                              data-mebel-popup="confirm-delete"
+                              data-title="Delete voucher?"
+                              data-message="This action cannot be undone.">
+
 
                             @csrf
                             @method('DELETE')

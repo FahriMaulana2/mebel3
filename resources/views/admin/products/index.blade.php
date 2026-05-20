@@ -103,9 +103,13 @@
                                 </a>
                                 
                                 <!-- Delete Button -->
-                                <form action="{{ route('admin.products.destroy', $product) }}" method="POST" onsubmit="return confirm('Delete this product?')" class="inline">
+                                <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline"
+                                      data-mebel-popup="confirm-delete"
+                                      data-title="Delete this product?"
+                                      data-message="This action cannot be undone.">
                                     @csrf
                                     @method('DELETE')
+
                                     <button type="submit" 
                                             class="bg-red-500 text-white px-3 py-1.5 rounded-lg hover:bg-red-600 transition text-xs font-medium flex items-center gap-1"
                                             title="Delete Product">

@@ -7,11 +7,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 class="text-2xl font-bold text-gray-900 mb-8">Order #{{ $order->id }}</h1>
         
-        @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
+
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Order Items -->
