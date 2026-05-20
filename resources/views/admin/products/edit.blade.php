@@ -4,137 +4,316 @@
 
 @section('content')
 <div class="max-w-3xl mx-auto">
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Edit Product: {{ $product->name }}</h1>
-    
-    <form action="{{ route('admin.products.update', $product) }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-xl shadow-md p-6">
+
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">
+        Edit Product: {{ $product->name }}
+    </h1>
+
+    <form action="{{ route('admin.products.update', $product) }}"
+          method="POST"
+          enctype="multipart/form-data"
+          class="bg-white rounded-xl shadow-md p-6">
+
         @csrf
         @method('PUT')
-        
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-            <input type="text" name="name" value="{{ old('name', $product->name) }}" required class="w-full border rounded-lg px-4 py-2">
-        </div>
-        
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <select name="category" class="w-full border rounded-lg px-4 py-2">
-                <option value="living-room" {{ $product->category == 'living-room' ? 'selected' : '' }}>Living Room</option>
-                <option value="bedroom" {{ $product->category == 'bedroom' ? 'selected' : '' }}>Bedroom</option>
-                <option value="office" {{ $product->category == 'office' ? 'selected' : '' }}>Home Office</option>
-                <option value="decor" {{ $product->category == 'decor' ? 'selected' : '' }}>Decor</option>
-            </select>
-        </div>
-        
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Price *</label>
-                <input type="number" name="price" value="{{ old('price', $product->price) }}" required class="w-full border rounded-lg px-4 py-2">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Stock *</label>
-                <input type="number" name="stock" value="{{ old('stock', $product->stock) }}" required class="w-full border rounded-lg px-4 py-2">
-            </div>
-        </div>
-        
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-            <select name="brand_id" class="w-full border rounded-lg px-4 py-2">
-                <option value="">Select Brand (optional)</option>
-                @foreach($brands as $brand)
-                <option value="{{ $brand->id }}" {{ $product->brand_id == $brand->id ? 'selected' : '' }}>{{ $brand->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea name="description" rows="5" class="w-full border rounded-lg px-4 py-2">{{ old('description', $product->description) }}</textarea>
-        </div>
-        
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Current Image</label>
-            @if($product->image)
-                <img src="{{ $product->image }}" class="w-24 h-24 object-cover rounded mb-2" onerror="this.style.display='none'">
-            @endif
-            <input type="file" name="image" accept="image/*" class="w-full border rounded-lg px-4 py-2">
-        </div>
-        
-       {{-- DISKON --}}
-<div class="grid grid-cols-2 gap-4 mb-4">
-    <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-            Discount Percentage
-        </label>
-        <input
-            type="number"
-            name="discount_percentage"
-            value="{{ old('discount_percentage', $product->discount_percentage ?? 0) }}"
-            min="0"
-            max="100"
-            class="w-full border rounded-lg px-4 py-2"
-            placeholder="10"
-        >
-    </div>
 
-    <div class="flex items-end">
-        <label class="flex items-center gap-2">
+        {{-- PRODUCT NAME --}}
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+                Product Name *
+            </label>
+
             <input
-                type="checkbox"
-                name="is_discount"
-                value="1"
-                {{ old('is_discount', $product->is_discount ?? false) ? 'checked' : '' }}
+                type="text"
+                name="name"
+                value="{{ old('name', $product->name) }}"
+                required
+                class="w-full border rounded-lg px-4 py-2"
             >
-            Active Discount
-        </label>
-    </div>
-</div>
+        </div>
 
-<div class="grid grid-cols-2 gap-4 mb-4">
-    <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-            Discount Start
-        </label>
+        {{-- CATEGORY --}}
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+                Category
+            </label>
 
-        <input
-            type="datetime-local"
-            name="discount_start"
-            value="{{ old('discount_start', optional($product->discount_start)->format('Y-m-d\TH:i')) }}"
-            class="w-full border rounded-lg px-4 py-2"
-        >
+            <select
+                name="category"
+                class="w-full border rounded-lg px-4 py-2">
 
-        <p class="text-xs text-gray-500 mt-1">
-            Gunakan date picker (format otomatis)
-        </p>
-    </div>
+                <option value="living-room"
+                    {{ $product->category == 'living-room' ? 'selected' : '' }}>
+                    Living Room
+                </option>
 
-    <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-            Discount End
-        </label>
+                <option value="bedroom"
+                    {{ $product->category == 'bedroom' ? 'selected' : '' }}>
+                    Bedroom
+                </option>
 
-        <input
-            type="datetime-local"
-            name="discount_end"
-            value="{{ old('discount_end', optional($product->discount_end)->format('Y-m-d\TH:i')) }}"
-            class="w-full border rounded-lg px-4 py-2"
-        >
+                <option value="office"
+                    {{ $product->category == 'office' ? 'selected' : '' }}>
+                    Home Office
+                </option>
 
-        <p class="text-xs text-gray-500 mt-1">
-            Gunakan date picker (format otomatis)
-        </p>
-    </div>
-</div>
-        
-      <!-- CTA UPDATE DAN CANCEL -->
-<div class="flex items-center justify-end gap-3 mt-6">
-    <a href="{{ route('admin.products.index') }}"
-       class="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
-        Cancel
-    </a>
+                <option value="decor"
+                    {{ $product->category == 'decor' ? 'selected' : '' }}>
+                    Decor
+                </option>
+            </select>
+        </div>
 
-    <button type="submit"
-        class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm">
-        Save Changes
-    </button>
+        {{-- PRICE & STOCK --}}
+        <div class="grid grid-cols-2 gap-4 mb-4">
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Price *
+                </label>
+
+                <input
+                    type="number"
+                    name="price"
+                    value="{{ old('price', $product->price) }}"
+                    required
+                    class="w-full border rounded-lg px-4 py-2"
+                >
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Stock *
+                </label>
+
+                <input
+                    type="number"
+                    name="stock"
+                    value="{{ old('stock', $product->stock) }}"
+                    required
+                    class="w-full border rounded-lg px-4 py-2"
+                >
+            </div>
+
+        </div>
+
+        {{-- BRAND --}}
+        <div class="mb-4">
+
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+                Brand
+            </label>
+
+            <select
+                name="brand_id"
+                class="w-full border rounded-lg px-4 py-2">
+
+                <option value="">
+                    Select Brand (optional)
+                </option>
+
+                @foreach($brands as $brand)
+
+                    <option
+                        value="{{ $brand->id }}"
+                        {{ $product->brand_id == $brand->id ? 'selected' : '' }}>
+
+                        {{ $brand->name }}
+
+                    </option>
+
+                @endforeach
+
+            </select>
+        </div>
+
+        {{-- DESCRIPTION --}}
+        <div class="mb-4">
+
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+                Description
+            </label>
+
+            <textarea
+                name="description"
+                rows="5"
+                class="w-full border rounded-lg px-4 py-2">{{ old('description', $product->description) }}</textarea>
+
+        </div>
+
+        {{-- IMAGE --}}
+        <div class="mb-4">
+
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+                Current Image
+            </label>
+
+            @if($product->image)
+
+                <img
+                    src="{{ $product->image }}"
+                    class="w-24 h-24 object-cover rounded mb-2"
+                    onerror="this.style.display='none'">
+
+            @endif
+
+            <input
+                type="file"
+                name="image"
+                accept="image/*"
+                class="w-full border rounded-lg px-4 py-2">
+
+        </div>
+
+        {{-- DISCOUNT --}}
+        <div class="grid grid-cols-2 gap-4 mb-4">
+
+            <div>
+
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Discount Percentage
+                </label>
+
+                <input
+                    type="number"
+                    name="discount_percentage"
+                    value="{{ old('discount_percentage', $product->discount_percentage ?? 0) }}"
+                    min="0"
+                    max="100"
+                    class="w-full border rounded-lg px-4 py-2"
+                    placeholder="10"
+                >
+
+            </div>
+
+            <div class="flex items-end">
+
+                <label class="flex items-center gap-2">
+
+                    <input
+                        type="hidden"
+                        name="is_discount"
+                        value="0">
+
+                    <input
+                        type="checkbox"
+                        name="is_discount"
+                        value="1"
+                        {{ old('is_discount', $product->is_discount ?? false) ? 'checked' : '' }}
+                    >
+
+                    Active Discount
+
+                </label>
+
+            </div>
+
+        </div>
+
+        {{-- DISCOUNT DATE --}}
+        <div class="grid grid-cols-2 gap-4 mb-4">
+
+            <div>
+
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Discount Start
+                </label>
+
+                <input
+                    type="datetime-local"
+                    name="discount_start"
+                    value="{{ old('discount_start', optional($product->discount_start)->format('Y-m-d\TH:i')) }}"
+                    class="w-full border rounded-lg px-4 py-2"
+                >
+
+                <p class="text-xs text-gray-500 mt-1">
+                    Gunakan date picker (format otomatis)
+                </p>
+
+            </div>
+
+            <div>
+
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Discount End
+                </label>
+
+                <input
+                    type="datetime-local"
+                    name="discount_end"
+                    value="{{ old('discount_end', optional($product->discount_end)->format('Y-m-d\TH:i')) }}"
+                    class="w-full border rounded-lg px-4 py-2"
+                >
+
+                <p class="text-xs text-gray-500 mt-1">
+                    Gunakan date picker (format otomatis)
+                </p>
+
+            </div>
+
+        </div>
+
+        {{-- PRODUCT STATUS --}}
+        <div class="flex gap-6 mb-6">
+
+            {{-- ACTIVE --}}
+            <label class="flex items-center gap-2">
+
+                <input type="hidden" name="is_active" value="0">
+
+                <input
+                    type="checkbox"
+                    name="is_active"
+                    value="1"
+                    {{ old('is_active', $product->is_active) ? 'checked' : '' }}
+                >
+
+                <span class="text-sm">
+                    Active Product
+                </span>
+
+            </label>
+
+            {{-- FEATURED --}}
+            <label class="flex items-center gap-2">
+
+                <input type="hidden" name="is_featured" value="0">
+
+                <input
+                    type="checkbox"
+                    name="is_featured"
+                    value="1"
+                    {{ old('is_featured', $product->is_featured) ? 'checked' : '' }}
+                >
+
+                <span class="text-sm">
+                    Featured Product
+                </span>
+
+            </label>
+
+        </div>
+
+        {{-- CTA BUTTON --}}
+        <div class="flex items-center justify-end gap-3 mt-6">
+
+            <a href="{{ route('admin.products.index') }}"
+               class="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition">
+
+                Cancel
+
+            </a>
+
+            <button
+                type="submit"
+                class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm">
+
+                Save Changes
+
+            </button>
+
+        </div>
+
+    </form>
 </div>
 @endsection
