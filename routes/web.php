@@ -71,5 +71,21 @@ Route::middleware(['auth'])
 // ================= AUTH =================
 Auth::routes();
 
+use Illuminate\Support\Facades\Http;
+
+Route::get('/test-wa', function () {
+
+    $response = Http::withHeaders([
+        'Authorization' => env('FONNTE_TOKEN'),
+    ])->post('https://api.fonnte.com/send', [
+        'target' => '08138756049',
+        'message' => 'WhatsApp otomatis dari website Kiana Furniture berhasil!',
+        'countryCode' => '62',
+    ]);
+
+    return $response->body();
+});
+
 // ================= REDIRECT HOME =================
 Route::redirect('/home', '/');
+
