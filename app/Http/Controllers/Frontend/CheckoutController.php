@@ -152,6 +152,9 @@ class CheckoutController extends Controller
                 'postal_code'    => $request->postal_code,
                 'courier'        => $request->courier,
 
+                // Pastikan phone customer tersimpan ke orders.phone
+                'phone'          => $request->phone,
+
                 'items'          => json_encode($cart),
 
                 'total_amount'   => $subtotal,
