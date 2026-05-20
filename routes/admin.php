@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ShipmentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\VoucherController;
+use App\Services\WhatsAppService;
 
 /*
 |--------------------------------------------------------------------------
@@ -111,6 +112,27 @@ Route::post(
 | LOGOUT
 |--------------------------------------------------------------------------
 */
+
+// TEST WhatsApp (manual)
+Route::get('/orders/whatsapp-test/{phone}', function (string $phone) {
+
+    $service = app(WhatsAppService::class);
+
+    abort_unless($service->isValidIndonesiaPhone($phone), 400, 'Invalid phone');
+
+    $target = $service->normalizeToCountryCode62($phone);
+
+    $service->send(
+        $target,
+        'Halo! Ini adalah test notifikasi WhatsApp dari Kiana Furniture.'
+    );
+
+    return response()->json([
+        'status' => 'sent',
+        'target' => $target,
+    ]);
+
+});
 
 Route::post('/logout', function () {
 
