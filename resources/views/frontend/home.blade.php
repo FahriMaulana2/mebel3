@@ -232,7 +232,6 @@
     </div>
 
 </div>
-
                 </a>
 
             </div>
@@ -619,7 +618,6 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
     let message = document.getElementById('message').value.trim();
 
     if(name === '' || email === '' || message === '') {
-
         alert('Mohon lengkapi form terlebih dahulu.');
         return;
     }
@@ -632,65 +630,37 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
 
     submitBtn.disabled = true;
 
-    /*
-    |--------------------------------------------------------------------------
-    | EMAIL RECEIVER
-    |--------------------------------------------------------------------------
-    */
+    let phoneNumber = '6283831520933';
 
-    let adminEmail = 'fahrimaulana93222gmail.com';
-
-    /*
-    |--------------------------------------------------------------------------
-    | EMAIL SUBJECT
-    |--------------------------------------------------------------------------
-    */
-
-    let emailSubject =
-        subject !== ''
-            ? subject
-            : 'Pesan dari Website KianaFurniture';
-
-    /*
-    |--------------------------------------------------------------------------
-    | EMAIL BODY
-    |--------------------------------------------------------------------------
-    */
-
-    let body =
-`Halo Admin KianaFurniture,
+    let text =
+`Halo Admin KianaFurniture 👋
 
 Saya ingin menghubungi KianaFurniture dengan detail berikut:
 
 ━━━━━━━━━━━━━━━
-Nama   : ${name}
-Email  : ${email}
+👤 Nama : ${name}
+📧 Email : ${email}
+📝 Subject : ${subject}
 ━━━━━━━━━━━━━━━
 
-Pesan:
+💬 Pesan:
 ${message}
 
 Terima kasih.`;
 
-    /*
-    |--------------------------------------------------------------------------
-    | OPEN EMAIL CLIENT
-    |--------------------------------------------------------------------------
-    */
-
-    let mailtoLink =
-`mailto:${adminEmail}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
+    let whatsappURL =
+`https://wa.me/${phoneNumber}?text=${encodeURIComponent(text)}`;
 
     setTimeout(() => {
 
-        window.location.href = mailtoLink;
+        window.open(whatsappURL, '_blank');
 
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
 
         document.getElementById('contactForm').reset();
 
-    }, 500);
+    }, 700);
 
 });
 </script>
