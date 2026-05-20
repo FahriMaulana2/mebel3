@@ -213,8 +213,12 @@ class CheckoutController extends Controller
                 'status'         => 'pending',
             ]);
 
-            DB::commit();
+        DB::commit();
 
+            // Pastikan nomor tujuan checkout tersimpan (orders.phone + shipments.phone)
+            // Lalu redirect ke halaman success yang berisi redirect manual ke WhatsApp admin.
+            // Redirect WhatsApp tetap berbasis wa.me seperti sistem existing Anda.
+            // Data order dan shipment sudah disimpan terlebih dahulu di database.
             return redirect()->route('checkout.success', $orderNumber);
 
         } catch (\Exception $e) {
