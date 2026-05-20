@@ -104,8 +104,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // otomatis buka whatsapp
     setTimeout(() => {
-        window.open("{{ $whatsappUrl }}", '_blank');
-    }, 1000);
+    window.location.href = "{{ $whatsappUrl }}";
+}, 1000);
 
     // kosongkan cart
     localStorage.removeItem('kiana_cart');
