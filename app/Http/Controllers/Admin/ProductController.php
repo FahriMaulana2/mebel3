@@ -13,7 +13,9 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with('brand')->latest()->paginate(10);
+        $products = Product::with('brand')
+            ->latest()
+            ->paginate(10);
 
         return view('admin.products.index', compact('products'));
     }
@@ -41,43 +43,67 @@ class ProductController extends Controller
             'discount_end' => 'nullable|date|after_or_equal:discount_start',
             'is_discount' => 'nullable|boolean',
 
+            // IMAGE
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'image_url' => 'nullable|url',
 
-            'is_featured' => 'boolean',
-            'is_active' => 'boolean',
+            // STATUS
+            'is_featured' => 'nullable|boolean',
+            'is_active' => 'nullable|boolean',
         ]);
 
         /*
+        |--------------------------------------------------------------------------
         | IMAGE UPLOAD
+        |--------------------------------------------------------------------------
         */
+
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
+
+            $validated['image'] = $request
+                ->file('image')
+                ->store('products', 'public');
+
         } elseif ($request->image_url) {
+
             $validated['image'] = $request->image_url;
         }
 
         /*
+        |--------------------------------------------------------------------------
         | DATE SAFE CONVERT
+        |--------------------------------------------------------------------------
         */
+
         if ($request->filled('discount_start')) {
-            $validated['discount_start'] = Carbon::parse($request->discount_start);
+
+            $validated['discount_start'] = Carbon::parse(
+                $request->discount_start
+            );
         }
 
         if ($request->filled('discount_end')) {
-            $validated['discount_end'] = Carbon::parse($request->discount_end);
+
+            $validated['discount_end'] = Carbon::parse(
+                $request->discount_end
+            );
         }
 
         /*
+        |--------------------------------------------------------------------------
         | PRODUCT DATA
+        |--------------------------------------------------------------------------
         */
+
         $validated['slug'] = Str::slug($validated['name']);
 
+        // FIX BOOLEAN
         $validated['is_featured'] = $request->has('is_featured');
         $validated['is_active'] = $request->has('is_active');
         $validated['is_discount'] = $request->has('is_discount');
 
-        $validated['discount_percentage'] = $request->discount_percentage ?? 0;
+        $validated['discount_percentage']
+            = $request->discount_percentage ?? 0;
 
         Product::create($validated);
 
@@ -109,49 +135,70 @@ class ProductController extends Controller
             'discount_end' => 'nullable|date|after_or_equal:discount_start',
             'is_discount' => 'nullable|boolean',
 
+            // IMAGE
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'image_url' => 'nullable|url',
 
-            'is_featured' => 'boolean',
-            'is_active' => 'boolean',
+            // STATUS
+            'is_featured' => 'nullable|boolean',
+            'is_active' => 'nullable|boolean',
         ]);
 
         /*
-        | IMAGE
+        |--------------------------------------------------------------------------
+        | IMAGE UPLOAD
+        |--------------------------------------------------------------------------
         */
+
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
+
+            $validated['image'] = $request
+                ->file('image')
+                ->store('products', 'public');
+
         } elseif ($request->image_url) {
+
             $validated['image'] = $request->image_url;
         }
 
         /*
+        |--------------------------------------------------------------------------
         | DATE SAFE CONVERT
+        |--------------------------------------------------------------------------
         */
+
         if ($request->filled('discount_start')) {
-            $validated['discount_start'] = Carbon::parse($request->discount_start);
+
+            $validated['discount_start'] = Carbon::parse(
+                $request->discount_start
+            );
         }
 
         if ($request->filled('discount_end')) {
-            $validated['discount_end'] = Carbon::parse($request->discount_end);
+
+            $validated['discount_end'] = Carbon::parse(
+                $request->discount_end
+            );
         }
 
         /*
-        | PRODUCT DATA FIX (INI YANG KRUSIAL)
+        |--------------------------------------------------------------------------
+        | PRODUCT DATA
+        |--------------------------------------------------------------------------
         */
+
         $validated['slug'] = Str::slug($validated['name']);
 
-        // 🔥 FIX UTAMA: jangan overwrite false saat checkbox tidak dikirim
-        if ($request->has('is_active')) {
-            $validated['is_active'] = true;
-        } else {
-            $validated['is_active'] = $product->is_active;
-        }
+        // 🔥 FIX STATUS AGAR TIDAK JADI INACTIVE
+        $validated['is_active'] = $request->has('is_active')
+            ? true
+            : $product->is_active;
 
         $validated['is_featured'] = $request->has('is_featured');
         $validated['is_discount'] = $request->has('is_discount');
 
-        $validated['discount_percentage'] = $request->discount_percentage ?? 0;
+        $validated['discount_percentage']
+            = $request->discount_percentage ?? 0;
 
         $product->update($validated);
 
