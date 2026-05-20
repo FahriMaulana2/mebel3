@@ -28,12 +28,16 @@ class Product extends Model
         'discount_percentage',
         'discount_start',
         'discount_end',
+        'is_discount', // TAMBAHAN
     ];
 
     protected $casts = [
         'images' => 'array',
+
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
+        'is_discount' => 'boolean', // TAMBAHAN
+
         'price' => 'decimal:2',
 
         // DISKON
@@ -95,6 +99,7 @@ class Product extends Model
     public function getFinalPriceAttribute()
     {
         if (
+            $this->is_discount &&
             $this->discount_percentage &&
             $this->discount_start &&
             $this->discount_end &&
@@ -120,6 +125,7 @@ class Product extends Model
     public function getHasDiscountAttribute()
     {
         return
+            $this->is_discount &&
             $this->discount_percentage &&
             $this->discount_start &&
             $this->discount_end &&
