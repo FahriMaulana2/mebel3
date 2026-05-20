@@ -37,7 +37,7 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'category' => 'nullable|string',
 
-            // DISKON
+            // DISCOUNT
             'discount_percentage' => 'nullable|numeric|min:0|max:100',
             'discount_start' => 'nullable|date',
             'discount_end' => 'nullable|date|after_or_equal:discount_start',
@@ -71,7 +71,7 @@ class ProductController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | DATE SAFE CONVERT
+        | DATE CONVERT
         |--------------------------------------------------------------------------
         */
 
@@ -97,10 +97,10 @@ class ProductController extends Controller
 
         $validated['slug'] = Str::slug($validated['name']);
 
-        // FIX BOOLEAN
-        $validated['is_featured'] = $request->has('is_featured');
-        $validated['is_active'] = $request->has('is_active');
-        $validated['is_discount'] = $request->has('is_discount');
+        // BOOLEAN FIX
+        $validated['is_active'] = $request->boolean('is_active');
+        $validated['is_featured'] = $request->boolean('is_featured');
+        $validated['is_discount'] = $request->boolean('is_discount');
 
         $validated['discount_percentage']
             = $request->discount_percentage ?? 0;
@@ -129,7 +129,7 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'category' => 'nullable|string',
 
-            // DISKON
+            // DISCOUNT
             'discount_percentage' => 'nullable|numeric|min:0|max:100',
             'discount_start' => 'nullable|date',
             'discount_end' => 'nullable|date|after_or_equal:discount_start',
@@ -163,7 +163,7 @@ class ProductController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | DATE SAFE CONVERT
+        | DATE CONVERT
         |--------------------------------------------------------------------------
         */
 
@@ -189,13 +189,10 @@ class ProductController extends Controller
 
         $validated['slug'] = Str::slug($validated['name']);
 
-        // 🔥 FIX STATUS AGAR TIDAK JADI INACTIVE
-        $validated['is_active'] = $request->has('is_active')
-            ? true
-            : $product->is_active;
-
-        $validated['is_featured'] = $request->has('is_featured');
-        $validated['is_discount'] = $request->has('is_discount');
+        // BOOLEAN FIX
+        $validated['is_active'] = $request->boolean('is_active');
+        $validated['is_featured'] = $request->boolean('is_featured');
+        $validated['is_discount'] = $request->boolean('is_discount');
 
         $validated['discount_percentage']
             = $request->discount_percentage ?? 0;
