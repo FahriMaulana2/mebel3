@@ -69,12 +69,20 @@
                             @endif
                         </td>
                         
-                        <!-- Status Column -->
-                        <td class="px-4 py-3">
-                            <span class="px-2 py-1 text-xs rounded-full font-medium {{ $product->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                {{ $product->is_active ? 'Active' : 'Inactive' }}
-                            </span>
-                        </td>
+                       <!-- Status Column -->
+<td class="px-4 py-3">
+    @php
+        $isActuallyActive = $product->is_active == 1;
+    @endphp
+
+    <span class="px-2 py-1 text-xs rounded-full font-medium
+        {{ $isActuallyActive
+            ? 'bg-green-100 text-green-700'
+            : 'bg-red-100 text-red-700' }}">
+            
+        {{ $isActuallyActive ? 'Active' : 'Inactive' }}
+    </span>
+</td>
                         
                         <!-- Actions Column - BUTTONS WITH TEXT -->
                         <td class="px-4 py-3">
