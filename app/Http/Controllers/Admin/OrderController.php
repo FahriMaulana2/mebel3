@@ -8,7 +8,6 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
-
 class OrderController extends Controller
 {
     public function index()
@@ -23,6 +22,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $order->load(['orderItems.product', 'payment', 'shipment']);
+
         return view('admin.orders.show', compact('order'));
     }
 
@@ -35,35 +35,53 @@ class OrderController extends Controller
         $oldStatus = (string) $order->status;
         $newStatus = (string) $request->status;
 
-        // update status order
+        // Jangan kirim email kalau status sama
+        if ($oldStatus === $newStatus) {
+
+            return redirect()
+                ->back()
+                ->with('info', 'Status tidak berubah.');
+        }
+
+        /**
+         * ============================
+         * UPDATE ORDER STATUS
+         * ============================
+         */
         $order->status = $newStatus;
         $order->save();
 
-        // update shipment status
+        /**
+         * ============================
+         * UPDATE SHIPMENT STATUS
+         * ============================
+         */
         if ($newStatus === 'shipped' && $order->shipment) {
+
             $order->shipment->status = 'shipped';
             $order->shipment->save();
         }
 
-        // update payment status
+        /**
+         * ============================
+         * UPDATE PAYMENT STATUS
+         * ============================
+         */
         if ($newStatus === 'completed' && $order->payment) {
+
             $order->payment->status = 'paid';
             $order->payment->save();
         }
 
         /**
          * ============================
-         * WHATSAPP NOTIFICATION (FONNTE)
+         * WHATSAPP NOTIFICATION
          * ============================
          */
-        if ($oldStatus !== $newStatus) {
+        try {
 
             $order->loadMissing(['shipment', 'user']);
 
-            /**
-             * 🔥 FIX UTAMA:
-             * fallback ke orders.phone kalau shipment null
-             */
             $rawPhone =
                 $order->shipment?->phone
                 ?? $order->phone
@@ -75,12 +93,16 @@ class OrderController extends Controller
 
                 $target = $wa->normalizeToCountryCode62($rawPhone);
 
-                $invoiceNumber = (string) ($order->invoice_number ?? $order->order_number);
+                $invoiceNumber = (string) (
+                    $order->invoice_number
+                    ?? $order->order_number
+                );
 
                 $customerName = (string) (
                     $order->shipment?->recipient_name
                     ?? $order->fullname
                     ?? $order->user?->name
+                    ?? 'Customer'
                 );
 
                 $message = $wa->messageForStatus([
@@ -88,37 +110,41 @@ class OrderController extends Controller
                     'invoice_number' => $invoiceNumber,
                 ], $newStatus);
 
-                try {
-                    $response = $wa->send($target, $message);
-
-                    // optional debug kalau mau cek
-                    // \Log::info('Fonnte response', $response);
-
-                } catch (\Throwable $e) {
-
-                    // jangan ganggu sistem admin
-                    \Log::error('WhatsApp Fonnte error: ' . $e->getMessage());
-                }
+                $wa->send($target, $message);
             }
 
-            /**
-             * ============================
-             * EMAIL NOTIFICATION (GMAIL SMTP)
-             * ============================
-             */
-            if (!empty($order->email)) {
-                try {
-                    $invoiceNumber = (string) ($order->invoice_number ?? $order->order_number);
+        } catch (\Throwable $e) {
 
-                    Mail::to($order->email)->send(
-                        new OrderStatusUpdatedMail($order, $newStatus)
-                    );
-                } catch (\Throwable $e) {
-                    \Log::error('Order status email error: ' . $e->getMessage());
-                }
-            }
+            \Log::error('WhatsApp Fonnte error: ' . $e->getMessage());
         }
 
+        /**
+         * ============================
+         * EMAIL NOTIFICATION
+         * ============================
+         */
+        try {
+
+            // DEBUG
+            \Log::info('EMAIL DEBUG', [
+                'email' => $order->email,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+            ]);
+
+            if (!empty($order->email)) {
+
+                Mail::to($order->email)->send(
+                    new OrderStatusUpdatedMail($order, $newStatus)
+                );
+
+                \Log::info('EMAIL BERHASIL DIKIRIM KE: ' . $order->email);
+            }
+
+        } catch (\Throwable $e) {
+
+            \Log::error('Order status email error: ' . $e->getMessage());
+        }
 
         return redirect()
             ->back()
