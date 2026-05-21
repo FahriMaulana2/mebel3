@@ -63,6 +63,20 @@
 
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">
+                        Email *
+                    </label>
+
+                    <input
+                        type="email"
+                        name="email"
+                        required
+                        class="w-full border rounded-lg px-4 py-2"
+                    >
+                </div>
+
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">
                         Address *
                     </label>
 

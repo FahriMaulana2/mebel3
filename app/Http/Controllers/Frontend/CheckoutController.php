@@ -117,7 +117,9 @@ class CheckoutController extends Controller
         $request->validate([
             'fullname'     => 'required|string|max:255',
             'phone'        => 'required|string|max:20',
+            'email'        => 'required|email|max:255',
             'address'      => 'required|string',
+
             'city'         => 'required|string|max:100',
             'postal_code'  => 'required|string|max:10',
             'courier'      => 'required|string',
@@ -259,8 +261,9 @@ class CheckoutController extends Controller
                 'order_number'   => $orderNumber,
                 'user_id'        => auth()->id(),
 
-                'fullname'       => $request->fullname,
+'fullname'       => $request->fullname,
                 'phone'          => $request->phone,
+                'email'          => $request->email,
                 'address'        => $request->address,
                 'city'           => $request->city,
                 'postal_code'    => $request->postal_code,
