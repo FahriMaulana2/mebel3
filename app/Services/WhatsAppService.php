@@ -9,12 +9,11 @@ class WhatsAppService
 {
     private const ENDPOINT = 'https://api.fonnte.com/send';
 
-    /**
-     * Validasi nomor WhatsApp Indonesia.
-     * Menerima format:
-     * - 08xxxxxxxxxx
-     * - 62xxxxxxxxxx
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | VALIDASI NOMOR INDONESIA
+    |--------------------------------------------------------------------------
+    */
     public function isValidIndonesiaPhone(?string $phone): bool
     {
         if (!$phone) {
@@ -23,85 +22,112 @@ class WhatsAppService
 
         $normalized = $this->normalizePhone($phone);
 
-        // 08 + 8..12 digit  | 62 + 8..12 digit
+        // valid: 08xxxxxxxxxx atau 62xxxxxxxxxx
         return (bool) preg_match('/^(08\d{8,12}|62\d{8,12})$/', $normalized);
     }
 
-    /**
-     * Normalisasi menjadi format countryCode 62 tanpa '+' (mis: 62812xxxx).
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | NORMALISASI KE FORMAT 62
+    |--------------------------------------------------------------------------
+    */
     public function normalizeToCountryCode62(string $phone): string
     {
-        $normalized = $this->normalizePhone($phone);
+        $phone = $this->normalizePhone($phone);
 
-        if (Str::startsWith($normalized, '08')) {
-            return '62' . substr($normalized, 2);
+        // 08xxxx -> 62xxxx
+        if (Str::startsWith($phone, '08')) {
+            return '62' . substr($phone, 2);
         }
 
-        if (Str::startsWith($normalized, '62')) {
-            return $normalized;
+        // sudah 62
+        if (Str::startsWith($phone, '62')) {
+            return $phone;
         }
 
-        return $normalized;
+        return $phone;
     }
 
-    /**
-     * Kirim WhatsApp menggunakan Fonnte API.
-     */
-    public function send(string $target, string $message, string $countryCode = '62'): void
+    /*
+    |--------------------------------------------------------------------------
+    | KIRIM WHATSAPP VIA FONNTE
+    |--------------------------------------------------------------------------
+    */
+    public function send(string $target, string $message, string $countryCode = '62'): bool
     {
-        $token = env('FONNTE_TOKEN');
-        if (!$token) {
-            // Fail-safe: jangan sampai update order crash jika token belum ada
-            return;
-        }
+        try {
+            $token = env('FONNTE_TOKEN');
 
-        Http::withHeaders([
-            'Authorization' => $token,
-        ])->timeout(20)
-            ->post(self::ENDPOINT, [
-                'target' => $target,
-                'message' => $message,
-                'countryCode' => $countryCode,
-            ])->throw();
+            if (!$token) {
+                return false;
+            }
+
+            $response = Http::withHeaders([
+                'Authorization' => $token,
+            ])->timeout(20)
+              ->post(self::ENDPOINT, [
+                  'target' => $target,
+                  'message' => $message,
+                  'countryCode' => $countryCode,
+              ]);
+
+            return $response->successful();
+
+        } catch (\Throwable $e) {
+            // jangan sampai crash sistem order
+            logger()->error('Fonnte Error: ' . $e->getMessage());
+
+            return false;
+        }
     }
 
-    /**
-     * Buat pesan WhatsApp berdasarkan status order.
-     * Pastikan message berupa plain text (tanpa HTML) untuk keamanan.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | PESAN BERDASARKAN STATUS ORDER
+    |--------------------------------------------------------------------------
+    */
     public function messageForStatus(array $orderData, string $status): string
     {
-        $customerName = (string) ($orderData['customer_name'] ?? '');
-        $invoiceNumber = (string) ($orderData['invoice_number'] ?? '');
+        $customerName  = $orderData['customer_name'] ?? '';
+        $invoiceNumber = $orderData['invoice_number'] ?? '';
 
-        $greeting = $customerName !== '' ? "Halo {$customerName}," : 'Halo,';
+        $greeting = $customerName
+            ? "Halo {$customerName},"
+            : "Halo,";
 
         $statusLabel = match ($status) {
-            'pending' => 'Menunggu Diproses',
+            'pending'   => 'Menunggu Diproses',
             'processed' => 'Pesanan Diproses',
-            'shipped' => 'Pesanan Dikirim',
+            'shipped'   => 'Pesanan Dikirim',
             'completed' => 'Pesanan Selesai',
             'cancelled' => 'Pesanan Dibatalkan',
-            default => ucfirst($status),
+            default     => ucfirst($status),
         };
 
-        $closing = 'Terima kasih telah berbelanja di Kiana Furniture.';
+        $closing = "Terima kasih telah berbelanja di Kiana Furniture.";
 
         return match ($status) {
-            'pending' => "{$greeting}\n\nTerima kasih telah melakukan pemesanan.\nInvoice: {$invoiceNumber}\nStatus: {$statusLabel}\n\nKami akan segera memproses pesanan Anda.\n{$closing}",
-            'processed' => "{$greeting}\n\nPesanan Anda sedang diproses.\nInvoice: {$invoiceNumber}\nStatus: {$statusLabel}\n\nTim kami sedang menyiapkan pesanan Anda.\n{$closing}",
-            'shipped' => "{$greeting}\n\nPesanan Anda sudah dikirim.\nInvoice: {$invoiceNumber}\nStatus: {$statusLabel}\n\nSilakan menunggu kedatangan.\n{$closing}",
-            'completed' => "{$greeting}\n\nPesanan Anda telah selesai.\nInvoice: {$invoiceNumber}\nStatus: {$statusLabel}\n\nTerima kasih atas kepercayaan Anda.\n{$closing}",
-            'cancelled' => "{$greeting}\n\nMaaf, pesanan Anda dibatalkan.\nInvoice: {$invoiceNumber}\nStatus: {$statusLabel}\n\nJika membutuhkan bantuan, silakan hubungi kami.\n{$closing}",
+            'pending' => "{$greeting}\n\nTerima kasih telah melakukan pemesanan.\nInvoice: {$invoiceNumber}\nStatus: {$statusLabel}\n\nKami akan segera memproses pesanan Anda.\n\n{$closing}",
+
+            'processed' => "{$greeting}\n\nPesanan Anda sedang diproses.\nInvoice: {$invoiceNumber}\nStatus: {$statusLabel}\n\nTim kami sedang menyiapkan pesanan Anda.\n\n{$closing}",
+
+            'shipped' => "{$greeting}\n\nPesanan Anda sudah dikirim.\nInvoice: {$invoiceNumber}\nStatus: {$statusLabel}\n\nSilakan menunggu kedatangan.\n\n{$closing}",
+
+            'completed' => "{$greeting}\n\nPesanan Anda telah selesai.\nInvoice: {$invoiceNumber}\nStatus: {$statusLabel}\n\nTerima kasih atas kepercayaan Anda.\n\n{$closing}",
+
+            'cancelled' => "{$greeting}\n\nMaaf, pesanan Anda dibatalkan.\nInvoice: {$invoiceNumber}\nStatus: {$statusLabel}\n\nJika membutuhkan bantuan, silakan hubungi kami.\n\n{$closing}",
+
             default => "{$greeting}\n\nUpdate status pesanan Anda.\nInvoice: {$invoiceNumber}\nStatus: {$statusLabel}\n\n{$closing}",
         };
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | NORMALIZE INTERNAL
+    |--------------------------------------------------------------------------
+    */
     private function normalizePhone(string $phone): string
     {
-        // hapus spasi/dash/bracket
         return preg_replace('/[\s\-()]/', '', $phone);
     }
 }
-
