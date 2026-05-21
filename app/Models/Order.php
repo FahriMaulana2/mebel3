@@ -58,10 +58,10 @@ class Order extends Model
     }
 
     // ORDER ITEMS
-    public function items()
-    {
-        return $this->hasMany(OrderItem::class);
-    }
+    public function orderItems()
+{
+    return $this->hasMany(OrderItem::class);
+}
 
     // PAYMENT
     public function payment()
