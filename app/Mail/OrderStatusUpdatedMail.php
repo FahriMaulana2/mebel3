@@ -11,20 +11,25 @@ class OrderStatusUpdatedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Order $order, public string $statusMessage)
+    public Order $order;
+
+    public string $statusMessage;
+
+    public function __construct(Order $order, string $statusMessage)
     {
+        $this->order = $order;
+        $this->statusMessage = $statusMessage;
     }
 
     public function build(): self
     {
         $invoice = (string) ($this->order->order_number ?? '');
 
-        return $this->subject("[Kiana Furniture] Update Order {$invoice}")
+        return $this
+            ->subject("[Kiana Furniture] Update Order {$invoice}")
             ->view('emails.order-status-updated')
             ->with([
-                'message' => $this->statusMessage,
+                'statusMessage' => $this->statusMessage,
             ]);
     }
 }
-
-

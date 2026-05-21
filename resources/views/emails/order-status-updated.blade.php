@@ -78,7 +78,7 @@
                 <div style="border-left:4px solid #10b981;background:#ecfdf5;padding:12px 14px;border-radius:10px;">
                     <div style="font-size:13px;color:#065f46;font-weight:700;margin-bottom:6px;">Pesan</div>
                     <div style="font-size:14px;color:#064e3b;line-height:1.6;">
-                        {!! nl2br(e($message)) !!}
+                       {!! nl2br(e($statusMessage)) !!}
                     </div>
                 </div>
 
