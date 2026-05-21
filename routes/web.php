@@ -96,7 +96,7 @@ Route::get('/test-email', function () {
 
     Mail::raw('Test email dari Kiana Furniture berhasil dikirim.', function ($message) {
 
-        $message->to('rriba270@gmail.com')
+        $message->to('fahrimaulana9322@gmail.com')
                 ->subject('Test Email Kiana Furniture');
     });
 
