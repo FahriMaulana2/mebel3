@@ -10,13 +10,17 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::with(['user', 'payment', 'shipment'])->latest()->paginate(15);
+        $orders = Order::with(['user', 'payment', 'shipment'])
+            ->latest()
+            ->paginate(15);
+
         return view('admin.orders.index', compact('orders'));
     }
 
     public function show(Order $order)
     {
         $order->load(['items.product', 'payment', 'shipment']);
+
         return view('admin.orders.show', compact('order'));
     }
 
@@ -29,32 +33,53 @@ class OrderController extends Controller
         $oldStatus = (string) $order->status;
         $newStatus = (string) $request->status;
 
+        // update status order
         $order->status = $newStatus;
         $order->save();
 
-        // If status is shipped, update shipment status
+        // update shipment status
         if ($newStatus === 'shipped' && $order->shipment) {
-            $order->shipment->markAsShipped();
+            $order->shipment->status = 'shipped';
+            $order->shipment->save();
         }
 
-        // If status is completed, update payment status
+        // update payment status
         if ($newStatus === 'completed' && $order->payment) {
-            $order->payment->markAsPaid();
+            $order->payment->status = 'paid';
+            $order->payment->save();
         }
 
-        // WhatsApp notification only when status actually changes
+        /**
+         * ============================
+         * WHATSAPP NOTIFICATION (FONNTE)
+         * ============================
+         */
         if ($oldStatus !== $newStatus) {
-            $order->loadMissing(['shipment']);
 
-            $rawPhone = $order->shipment?->phone; // phone taken from checkout -> shipment.phone
+            $order->loadMissing(['shipment', 'user']);
+
+            /**
+             * 🔥 FIX UTAMA:
+             * fallback ke orders.phone kalau shipment null
+             */
+            $rawPhone =
+                $order->shipment?->phone
+                ?? $order->phone
+                ?? null;
 
             $wa = app(\App\Services\WhatsAppService::class);
 
-            if ($wa->isValidIndonesiaPhone($rawPhone)) {
+            if ($rawPhone && $wa->isValidIndonesiaPhone($rawPhone)) {
+
                 $target = $wa->normalizeToCountryCode62($rawPhone);
 
                 $invoiceNumber = (string) ($order->invoice_number ?? $order->order_number);
-                $customerName = (string) ($order->shipment?->recipient_name ?? $order->fullname ?? $order->user?->name);
+
+                $customerName = (string) (
+                    $order->shipment?->recipient_name
+                    ?? $order->fullname
+                    ?? $order->user?->name
+                );
 
                 $message = $wa->messageForStatus([
                     'customer_name' => $customerName,
@@ -62,14 +87,21 @@ class OrderController extends Controller
                 ], $newStatus);
 
                 try {
-                    $wa->send($target, $message);
+                    $response = $wa->send($target, $message);
+
+                    // optional debug kalau mau cek
+                    // \Log::info('Fonnte response', $response);
+
                 } catch (\Throwable $e) {
-                    // Jangan ganggu proses admin/order jika WhatsApp gagal.
-                    // Anda bisa tambahkan logging bila dibutuhkan.
+
+                    // jangan ganggu sistem admin
+                    \Log::error('WhatsApp Fonnte error: ' . $e->getMessage());
                 }
             }
         }
 
-        return redirect()->back()->with('success', 'Order status updated successfully!');
+        return redirect()
+            ->back()
+            ->with('success', 'Order status updated successfully!');
     }
 }
