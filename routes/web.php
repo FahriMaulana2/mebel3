@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\ProductController as FrontendProductController;
@@ -75,14 +77,13 @@ Route::middleware(['auth'])
 // ================= AUTH =================
 Auth::routes();
 
-use Illuminate\Support\Facades\Http;
-
+// ================= TEST WHATSAPP =================
 Route::get('/test-wa', function () {
 
     $response = Http::withHeaders([
         'Authorization' => env('FONNTE_TOKEN'),
     ])->post('https://api.fonnte.com/send', [
-        'target' => '083831520933',
+        'target' => '083138756049',
         'message' => 'WhatsApp otomatis dari website Kiana Furniture berhasil!',
         'countryCode' => '62',
     ]);
@@ -90,6 +91,17 @@ Route::get('/test-wa', function () {
     return $response->body();
 });
 
+// ================= TEST EMAIL =================
+Route::get('/test-email', function () {
+
+    Mail::raw('Test email dari Kiana Furniture berhasil dikirim.', function ($message) {
+
+        $message->to('rriba270@gmail.com')
+                ->subject('Test Email Kiana Furniture');
+    });
+
+    return 'Email berhasil dikirim';
+});
+
 // ================= REDIRECT HOME =================
 Route::redirect('/home', '/');
-
