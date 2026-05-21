@@ -19,6 +19,99 @@ class CheckoutController extends Controller
         return view('frontend.checkout.index');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | APPLY VOUCHER AJAX
+    |--------------------------------------------------------------------------
+    */
+    public function applyVoucher(Request $request)
+    {
+        $request->validate([
+            'voucher_code' => 'required',
+            'subtotal' => 'required|numeric',
+        ]);
+
+        $voucher = Voucher::where('code', strtoupper($request->voucher_code))
+            ->where('is_active', true)
+            ->first();
+
+        if (!$voucher) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Voucher tidak valid',
+            ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | CEK SUDAH DIPAKAI
+        |--------------------------------------------------------------------------
+        */
+        if (auth()->check()) {
+
+            $alreadyUsed = Order::where('user_id', auth()->id())
+                ->where('voucher_id', $voucher->id)
+                ->exists();
+
+            if ($alreadyUsed) {
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Voucher sudah pernah digunakan',
+                ]);
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | CEK EXPIRED
+        |--------------------------------------------------------------------------
+        */
+        if ($voucher->expired_at && now()->gt($voucher->expired_at)) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Voucher sudah expired',
+            ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | CEK MINIMUM ORDER
+        |--------------------------------------------------------------------------
+        */
+        if ($request->subtotal < $voucher->minimum_order) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Minimum order Rp ' .
+                    number_format($voucher->minimum_order, 0, ',', '.'),
+            ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | HITUNG DISKON
+        |--------------------------------------------------------------------------
+        */
+        if ($voucher->type === 'percent') {
+
+            $discount = $request->subtotal * ($voucher->value / 100);
+
+        } else {
+
+            $discount = $voucher->value;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Voucher berhasil digunakan',
+            'discount' => $discount,
+            'voucher_id' => $voucher->id,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -34,6 +127,7 @@ class CheckoutController extends Controller
         $cart = json_decode($request->cart_data, true);
 
         if (!$cart || count($cart) == 0) {
+
             return back()->with('error', 'Cart kosong!');
         }
 
@@ -45,6 +139,7 @@ class CheckoutController extends Controller
         $subtotal = 0;
 
         foreach ($cart as $item) {
+
             $subtotal += $item['price'] * $item['quantity'];
         }
 
@@ -65,37 +160,51 @@ class CheckoutController extends Controller
 
         if ($request->voucher_code) {
 
-
             $voucher = Voucher::where('code', strtoupper($request->voucher_code))
                 ->where('is_active', true)
                 ->first();
 
             if (!$voucher) {
+
                 return back()->with('error', 'Voucher tidak valid');
             }
 
-            // STRICT RULE: 1 user can use the same voucher only once
+            /*
+            |--------------------------------------------------------------------------
+            | CEK SUDAH DIPAKAI
+            |--------------------------------------------------------------------------
+            */
             if (auth()->id()) {
+
                 $alreadyUsed = Order::where('user_id', auth()->id())
                     ->where('voucher_id', $voucher->id)
                     ->exists();
 
                 if ($alreadyUsed) {
+
                     return back()->with('error', 'Voucher sudah pernah digunakan');
                 }
             }
 
-
             $voucherId = $voucher->id;
 
-            // cek expired
-
+            /*
+            |--------------------------------------------------------------------------
+            | CEK EXPIRED
+            |--------------------------------------------------------------------------
+            */
             if ($voucher->expired_at && now()->gt($voucher->expired_at)) {
+
                 return back()->with('error', 'Voucher sudah expired');
             }
 
-            // cek minimum order
+            /*
+            |--------------------------------------------------------------------------
+            | CEK MINIMUM ORDER
+            |--------------------------------------------------------------------------
+            */
             if ($subtotal < $voucher->minimum_order) {
+
                 return back()->with(
                     'error',
                     'Minimum order Rp ' .
@@ -103,7 +212,11 @@ class CheckoutController extends Controller
                 );
             }
 
-            // hitung diskon
+            /*
+            |--------------------------------------------------------------------------
+            | HITUNG DISKON
+            |--------------------------------------------------------------------------
+            */
             if ($voucher->type === 'percent') {
 
                 $discount = $subtotal * ($voucher->value / 100);
@@ -122,6 +235,7 @@ class CheckoutController extends Controller
         $grandTotal = ($subtotal + $shippingCost) - $discount;
 
         if ($grandTotal < 0) {
+
             $grandTotal = 0;
         }
 
@@ -152,22 +266,18 @@ class CheckoutController extends Controller
                 'postal_code'    => $request->postal_code,
                 'courier'        => $request->courier,
 
-                // Pastikan phone customer tersimpan ke orders.phone
-                'phone'          => $request->phone,
-
                 'items'          => json_encode($cart),
 
                 'total_amount'   => $subtotal,
                 'shipping_cost'  => $shippingCost,
                 'grand_total'    => $grandTotal,
 
-'status'         => 'pending',
+                'status'         => 'pending',
                 'payment_status' => 'pending',
 
                 'notes'          => 'Order via WhatsApp',
-                'voucher_id'    => $voucherId,
+                'voucher_id'     => $voucherId,
             ]);
-
 
             /*
             |--------------------------------------------------------------------------
@@ -195,8 +305,6 @@ class CheckoutController extends Controller
                 'order_id'       => $order->id,
                 'amount'         => $grandTotal,
                 'payment_method' => 'whatsapp',
-
-                // GANTI unpaid -> pending
                 'status'         => 'pending',
             ]);
 
@@ -216,12 +324,8 @@ class CheckoutController extends Controller
                 'status'         => 'pending',
             ]);
 
-        DB::commit();
+            DB::commit();
 
-            // Pastikan nomor tujuan checkout tersimpan (orders.phone + shipments.phone)
-            // Lalu redirect ke halaman success yang berisi redirect manual ke WhatsApp admin.
-            // Redirect WhatsApp tetap berbasis wa.me seperti sistem existing Anda.
-            // Data order dan shipment sudah disimpan terlebih dahulu di database.
             return redirect()->route('checkout.success', $orderNumber);
 
         } catch (\Exception $e) {
@@ -237,34 +341,13 @@ class CheckoutController extends Controller
         $order = Order::where('order_number', $orderNumber)
             ->firstOrFail();
 
-        /*
-        |--------------------------------------------------------------------------
-        | NOMOR ADMIN
-        |--------------------------------------------------------------------------
-        */
-        // Nomor WhatsApp admin/toko (tujuan redirect checkout manual)
         $adminPhone = '6283138756049';
 
-        /*
-        |--------------------------------------------------------------------------
-        | DECODE ITEMS
-        |--------------------------------------------------------------------------
-        */
         $items = json_decode($order->items, true);
 
-        /*
-        |--------------------------------------------------------------------------
-        | HITUNG DISKON
-        |--------------------------------------------------------------------------
-        */
         $discount = ($order->total_amount + $order->shipping_cost)
             - $order->grand_total;
 
-        /*
-        |--------------------------------------------------------------------------
-        | BUAT PESAN WHATSAPP
-        |--------------------------------------------------------------------------
-        */
         $message = "*🛍️ ORDER BARU DARI KIANA FURNITURE*%0A%0A";
 
         $message .= "*📋 DETAIL PEMESAN:*%0A";
@@ -290,11 +373,6 @@ class CheckoutController extends Controller
             $message .= "%0A";
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | TOTAL PEMBAYARAN
-        |--------------------------------------------------------------------------
-        */
         $message .= "%0A*💰 TOTAL PEMBAYARAN:*%0A";
 
         $message .= "Subtotal: Rp "
@@ -318,11 +396,6 @@ class CheckoutController extends Controller
 
         $message .= "_Pesan dikirim dari website Kiana Furniture_";
 
-        /*
-        |--------------------------------------------------------------------------
-        | URL WHATSAPP
-        |--------------------------------------------------------------------------
-        */
         $whatsappUrl = "https://wa.me/{$adminPhone}?text={$message}";
 
         return view('frontend.checkout.success', compact(
