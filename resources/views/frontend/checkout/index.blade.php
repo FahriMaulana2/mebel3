@@ -9,7 +9,17 @@
         Checkout
     </h1>
 
+    @if(session('error'))
+        <div class="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-lg mb-6">
+            {{ session('error') }}
+        </div>
+    @endif
 
+    @if(session('success'))
+        <div class="bg-green-100 border border-green-300 text-green-700 px-4 py-3 rounded-lg mb-6">
+            {{ session('success') }}
+        </div>
+    @endif
 
     <form action="{{ route('checkout.store') }}" method="POST" id="checkout-form">
         @csrf
@@ -196,7 +206,9 @@
 
 <script>
 
-function applyVoucher() {
+let appliedDiscount = 0;
+
+async function applyVoucher() {
 
     const code = document
         .getElementById('voucher_code')
@@ -204,6 +216,14 @@ function applyVoucher() {
         .trim();
 
     const message = document.getElementById('voucher-message');
+
+    const cart = JSON.parse(localStorage.getItem('kiana_cart') || '[]');
+
+    let subtotal = 0;
+
+    cart.forEach(item => {
+        subtotal += item.price * item.quantity;
+    });
 
     if (code === '') {
 
@@ -216,11 +236,59 @@ function applyVoucher() {
         return;
     }
 
-    message.innerHTML = `
-        <span class="text-green-600">
-            Voucher akan dicek saat checkout
-        </span>
-    `;
+    try {
+
+        const response = await fetch("{{ route('checkout.apply-voucher') }}", {
+
+            method: 'POST',
+
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+            },
+
+            body: JSON.stringify({
+                voucher_code: code,
+                subtotal: subtotal,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+
+            appliedDiscount = data.discount;
+
+            message.innerHTML = `
+                <span class="text-green-600">
+                    ${data.message}
+                </span>
+            `;
+
+        } else {
+
+            appliedDiscount = 0;
+
+            message.innerHTML = `
+                <span class="text-red-600">
+                    ${data.message}
+                </span>
+            `;
+        }
+
+        loadOrderSummary();
+
+    } catch (error) {
+
+        appliedDiscount = 0;
+
+        message.innerHTML = `
+            <span class="text-red-600">
+                Gagal apply voucher
+            </span>
+        `;
+    }
 }
 
 function loadOrderSummary() {
@@ -267,9 +335,7 @@ function loadOrderSummary() {
 
     const shipping = 20000;
 
-    const discount = 0;
-
-    const total = subtotal + shipping - discount;
+    const total = subtotal + shipping - appliedDiscount;
 
     html += `
         <hr class="my-4">
@@ -292,7 +358,7 @@ function loadOrderSummary() {
             <span>Discount</span>
 
             <span>
-                - Rp ${discount.toLocaleString('id-ID')}
+                - Rp ${appliedDiscount.toLocaleString('id-ID')}
             </span>
         </div>
 
