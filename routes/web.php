@@ -50,6 +50,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'store'])
         ->name('checkout.store');
 
+    // APPLY VOUCHER
+    Route::post('/checkout/apply-voucher', [CheckoutController::class, 'applyVoucher'])
+        ->name('checkout.apply-voucher');
+
     Route::get('/checkout/success/{orderNumber}', [CheckoutController::class, 'success'])
         ->name('checkout.success');
 
