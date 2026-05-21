@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderStatusUpdatedMail;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+
 
 class OrderController extends Controller
 {
@@ -97,7 +100,25 @@ class OrderController extends Controller
                     \Log::error('WhatsApp Fonnte error: ' . $e->getMessage());
                 }
             }
+
+            /**
+             * ============================
+             * EMAIL NOTIFICATION (GMAIL SMTP)
+             * ============================
+             */
+            if (!empty($order->email)) {
+                try {
+                    $invoiceNumber = (string) ($order->invoice_number ?? $order->order_number);
+
+                    Mail::to($order->email)->send(
+                        new OrderStatusUpdatedMail($order, $newStatus)
+                    );
+                } catch (\Throwable $e) {
+                    \Log::error('Order status email error: ' . $e->getMessage());
+                }
+            }
         }
+
 
         return redirect()
             ->back()

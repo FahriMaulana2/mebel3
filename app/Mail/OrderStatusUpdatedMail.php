@@ -20,7 +20,11 @@ class OrderStatusUpdatedMail extends Mailable
         $invoice = (string) ($this->order->order_number ?? '');
 
         return $this->subject("[Kiana Furniture] Update Order {$invoice}")
-            ->view('emails.order-status-updated');
+            ->view('emails.order-status-updated')
+            ->with([
+                'message' => $this->statusMessage,
+            ]);
     }
 }
+
 

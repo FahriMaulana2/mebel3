@@ -261,7 +261,7 @@ class CheckoutController extends Controller
                 'order_number'   => $orderNumber,
                 'user_id'        => auth()->id(),
 
-'fullname'       => $request->fullname,
+                'fullname'       => $request->fullname,
                 'phone'          => $request->phone,
                 'email'          => $request->email,
                 'address'        => $request->address,
