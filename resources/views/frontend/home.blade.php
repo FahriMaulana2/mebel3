@@ -103,9 +103,7 @@
         </div>
 
         @php
-            $featuredProducts = \App\Models\Product::latest()
-                ->take(4)
-                ->get();
+            $featuredProducts = \App\Models\Product::latest()->take(4)->get();
         @endphp
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -116,122 +114,100 @@
 
                 <a href="{{ url('/products/' . $product->slug) }}">
 
+                    {{-- IMAGE --}}
                     <div class="h-64 overflow-hidden">
 
-    @php
-        if ($product->image) {
+                        @php
+                            if ($product->image) {
+                                if (Str::startsWith($product->image, ['http://','https://'])) {
+                                    $imagePath = $product->image;
+                                } else {
+                                    $imagePath = asset('storage/' . $product->image);
+                                }
+                            } else {
+                                $imagePath = 'https://via.placeholder.com/600x600?text=No+Image';
+                            }
+                        @endphp
 
-            if (
-                Str::startsWith($product->image, ['http://', 'https://'])
-            ) {
+                        <img
+                            src="{{ $imagePath }}"
+                            alt="{{ $product->name }}"
+                            class="w-full h-full object-cover hover:scale-105 transition duration-500">
 
-                $imagePath = $product->image;
-
-            } else {
-
-                $imagePath = asset('storage/' . $product->image);
-
-            }
-
-        } else {
-
-            $imagePath = 'https://via.placeholder.com/600x600?text=No+Image';
-
-        }
-    @endphp
-
-    <img
-        src="{{ $imagePath }}"
-        alt="{{ $product->name }}"
-        class="w-full h-full object-cover hover:scale-105 transition duration-500">
-
-</div>
+                    </div>
 
                     <div class="p-5">
 
-    @php
+                        @php
+                            $isDiscountActive = false;
+                            $discountPrice = $product->price;
 
-        $isDiscountActive = false;
+                            if ($product->is_discount && $product->discount_percentage > 0) {
 
-        if (
-            $product->is_discount &&
-            $product->discount_percentage > 0
-        ) {
+                                $now = now();
 
-            $now = now();
+                                $start = $product->discount_start
+                                    ? \Carbon\Carbon::parse($product->discount_start)
+                                    : null;
 
-            $start = $product->discount_start;
-            $end = $product->discount_end;
+                                $end = $product->discount_end
+                                    ? \Carbon\Carbon::parse($product->discount_end)
+                                    : null;
 
-            if (
-                (!$start || $now >= $start) &&
-                (!$end || $now <= $end)
-            ) {
-                $isDiscountActive = true;
-            }
-        }
+                                if (
+                                    (!$start || $now >= $start) &&
+                                    (!$end || $now <= $end)
+                                ) {
+                                    $isDiscountActive = true;
 
-        $discountPrice = $product->price;
+                                    $discountPrice =
+                                        $product->price -
+                                        ($product->price * $product->discount_percentage / 100);
+                                }
+                            }
+                        @endphp
 
-        if ($isDiscountActive) {
+                        {{-- NAME --}}
+                        <h3 class="font-semibold text-gray-800 text-lg mb-2 line-clamp-2">
+                            {{ $product->name }}
+                        </h3>
 
-            $discountPrice =
-                $product->price -
-                ($product->price * $product->discount_percentage / 100);
-        }
+                        {{-- BADGE --}}
+                        @if($isDiscountActive)
+                            <div class="mb-3">
+                                <span class="inline-flex items-center bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full">
+                                    🔥 {{ $product->discount_percentage }}% OFF
+                                </span>
+                            </div>
+                        @endif
 
-    @endphp
+                        {{-- PRICE --}}
+                        <div class="flex flex-col gap-1">
 
-    {{-- PRODUCT NAME --}}
-    <h3 class="font-semibold text-gray-800 text-lg mb-2 line-clamp-2">
-        {{ $product->name }}
-    </h3>
+                            @if($isDiscountActive)
 
-    {{-- DISCOUNT BADGE --}}
-    @if($isDiscountActive)
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="text-red-600 font-bold text-2xl">
+                                        Rp {{ number_format($discountPrice, 0, ',', '.') }}
+                                    </span>
 
-        <div class="mb-3">
+                                    <span class="text-gray-400 line-through text-sm">
+                                        Rp {{ number_format($product->price, 0, ',', '.') }}
+                                    </span>
+                                </div>
 
-            <span class="inline-flex items-center bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full">
+                            @else
 
-                🔥 {{ $product->discount_percentage }}% OFF
+                                <span class="text-brown-600 font-bold text-2xl">
+                                    Rp {{ number_format($product->price, 0, ',', '.') }}
+                                </span>
 
-            </span>
+                            @endif
 
-        </div>
+                        </div>
 
-    @endif
+                    </div>
 
-    {{-- PRICE --}}
-    <div class="flex flex-col gap-1">
-
-        {{-- DISCOUNT PRICE --}}
-        @if($isDiscountActive)
-
-            <div class="flex items-center gap-2 flex-wrap">
-
-                <span class="text-red-600 font-bold text-2xl">
-                    Rp {{ number_format($discountPrice, 0, ',', '.') }}
-                </span>
-
-                <span class="text-gray-400 line-through text-sm">
-                    Rp {{ number_format($product->price, 0, ',', '.') }}
-                </span>
-
-            </div>
-
-        @else
-
-            {{-- NORMAL PRICE --}}
-            <span class="text-brown-600 font-bold text-2xl">
-                Rp {{ number_format($product->price, 0, ',', '.') }}
-            </span>
-
-        @endif
-
-    </div>
-
-</div>
                 </a>
 
             </div>
@@ -249,6 +225,7 @@
     </div>
 
 </section>
+
 
 <!-- COMPANY SECTION -->
 <section id="company-history" class="py-20 bg-[#F8F5F1] overflow-hidden">
